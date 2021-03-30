@@ -2,10 +2,10 @@
 vars = {"lag" 44.2974 2; "Tc" 2.6514 2; "T1" 0.6807 2};
 
 % Which variable do you want to vary
-perturbedVars = ["Tc", "T1"];
+perturbedVars = ["lag"];
 
 % How many times do you want to run it
-nRuns = 100;
+nRuns = 1000;
 
 % Set time span
 tspan = 336;
@@ -76,4 +76,4 @@ for i = 1:nRuns
 end
 toc
 
-save('20210322-TcT1.mat', 'results');
+save('20210330-lag.mat', 'logDist', 'results');

@@ -1,8 +1,12 @@
 % Load results
-load('20210322-TcT1.mat');
+load('20210322-lag.mat');
 
 % Generate colors for all runs
-jetcustom = jet(length(results));
+nColors = (ceil(range(logDist)) + 1) * 1000;
+jetcustom = jet(nColors);
+
+offset = ceil(logDist(1)-1);
+center = length(results)/2;
 
 % Plot
 figure;
@@ -14,14 +18,19 @@ for i = 1:length(results)
         ddeRes = deval(sol, j);
         yint(j) = 100* ddeRes(5) / (ddeRes(4) + ddeRes(5));
     end
-    plot(tint, yint, 'Color',  jetcustom(i, :));
+    if i == center
+        plot(tint, yint, 'Color', 'black', 'LineWidth', 2);
+    else
+        plot(tint, yint, 'Color',  jetcustom(((ceil(logDist(i)) - offset) * 1000), :));
+    end
     hold on;
 end
-colormap(jet(length(results)));
+set(gca,'ColorScale','log')
+colormap(jetcustom);
 cb = colorbar;
-caxis([results{1, 1} results{end, 1}]);
-ylabel(cb,'Percentile of Perturbed Varriable(s)');
+caxis([0 ceil(logDist(end))]);
+ylabel(cb,'Value of Perturbed Varriable');
 grid on;
-title('Perturbation of Tc and T1 Together');
+title('Perturbation of T1 Alone');
 xlabel('Time (Hours)');
 ylabel('Expression (%)');
