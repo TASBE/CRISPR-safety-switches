@@ -1,0 +1,50 @@
+% Set seed for random number generator for reproducibility in testing
+rng('default')
+
+% Select model to use (use exact name of function)
+modelName = 'perturbableFitCas9AssumeDelay';
+
+% Read in a table of fit values
+T = readtable(['terms-', modelName, '.csv']);
+
+% Pick which fit you want to use
+fit = 'name';
+
+% Get the variables 
+FitTable = T(:,{'varName', [fit, '_fit'], [fit, '_std']});
+
+% List all fit values and standard deviations for variables
+vars = table2cell(FitTable);
+
+% Which variable do you want to vary
+perturbedVars = ["lag"];
+
+% How many times do you want to run it
+nRuns = 1000;
+
+% Set time span
+tspan = 336;
+
+% Pick perturbation type
+perturbType = 'random';
+
+% Pass to perturbation script
+feval([perturbType, 'perturbation.m'], modelName, vars, perturbedVars, nRuns, tspan)
+
+% Check number of arguments provided is equal to the 
+% height(terms)
+% if nargin(fcn_name)-1 ~= length(vars)
+%     fprintf('Number of arguments provided is incorrect.\nQuitting program.\n')
+%     return;
+% end
+
+% HARDCODE FOR TESTING
+% varsToUse = [44.2974 2.6514 0.6807];
+
+% Run the model
+tspan = 336;
+i = 1;
+% results = {perturbableFitCas9AssumeDelay([0, tspan], varsToUse(i, 1), varsToUse(i, 2), varsToUse(i, 3))};
+feval(modelName,[0, tspan], varsToUse)
+
+

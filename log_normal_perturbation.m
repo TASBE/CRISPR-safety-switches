@@ -52,11 +52,11 @@ for i = 1:nRuns
         if whichVars(k)
             mean = vars{k, 2};
             stddev = vars{k, 3};
-            logDist = zeros(size(percentiles));
+            Dist = zeros(size(percentiles));
             for l = 1:length(percentiles)
-                logDist(l) = 10^(normalDist(l)*log10(stddev)+log10(mean));
+                Dist(l) = 10^(normalDist(l)*log10(stddev)+log10(mean));
             end
-            varsToUse(:, k) = logDist;
+            varsToUse(:, k) = Dist;
         else
             varsToUse(:, k) = vars{k, 2};
         end
@@ -75,5 +75,3 @@ for i = 1:nRuns
     end
 end
 toc
-
-save('20210330-lag.mat', 'logDist', 'results');

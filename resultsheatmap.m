@@ -1,5 +1,5 @@
 % Load results
-load('20210322-TcT1.mat');
+load('dev-results/20210330-rand-lag.mat');
 
 tspan = 336; % Change to pass this on from the data generation script
 
@@ -21,9 +21,9 @@ end
 
 % Plot
 figure;
-hist3([x', y'], [50 50], 'CdataMode','auto')
+hist3([x', y'], [336 100], 'CdataMode','auto')
 xlabel('Time (hours)')
 ylabel('% EGFP neg')
 colorbar
-caxis([0 500])
+caxis([0 20])
 view(2)

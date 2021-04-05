@@ -1,6 +1,10 @@
-function sol = perturbableFitCas9AssumeDelay(tspan, lag, Tc, T1)
-        options = [];
-        sol=dde23(@ddefun, lag, [3.8039, 0, 0, 10, 0], tspan, options, Tc, T1);% Had to hardcodde history, otherwise I get "too many arguements error", not sure why
+function sol = perturbableFitCas9AssumeDelay(tspan, vars)
+    lag = vars(1);
+    Tc = vars(2);
+    T1 = vars(3);
+
+    options = [];
+    sol=dde23(@ddefun, lag, [3.8039, 0, 0, 10, 0], tspan, options, Tc, T1);% Had to hardcodde history, otherwise I get "too many arguements error", not sure why
 
     function dydt = ddefun(t,y,Z,Tc,T1)
         ylag1 = Z(:,1);
