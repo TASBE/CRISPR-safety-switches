@@ -1,11 +1,12 @@
 % Set seed for random number generator for reproducibility in testing
 rng('default')
 
+%% Set variables for run
 % Select model to use (use exact name of function)
-modelName = 'perturbableFitCas9AssumeDelay';
+fcnHandle = @GeneTherapySystemElimination;
 
 % Read in a table of fit values
-T = readtable(['terms-', modelName, '.csv']);
+T = readtable('terms-GeneTherapySystemElimination.csv');
 
 % Pick which fit you want to use
 fit = 'name';
@@ -23,14 +24,23 @@ perturbedVars = ["lag"];
 nRuns = 10;
 
 % Set time span
-tspan = 336;
+tspan = [0, 336];
 
 % Pick perturbation type
-perturbType = 'random';
+random = false;
 
-% Pass to perturbation script
-[Dist, results] = feval([perturbType, 'perturbation'], modelName, vars, perturbedVars, nRuns, tspan);
+% % Set path for output
+% outpath = '20210407-test/';
+% 
+% %% Make outptut folder
+% if ~isfolder(outpath)
+%     mkdir(outpath);
+% end
 
-% Save results
-save('20210404-rand-lag.mat', 'Dist', 'results');
+%% Pass to perturbation script
+[whichVars, Dist, results] = logNormalPerturbation(fcnHandle, vars, perturbedVars, nRuns, tspan, random);
+
+%% Save results
+save('202104046-lag.mat', 'Dist', 'results', 'random', 'perturbedVars',...
+    'tspan', 'whichVars');
 
