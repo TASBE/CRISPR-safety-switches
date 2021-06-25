@@ -117,7 +117,8 @@ function [whichVars, results] = logNormalPerturbation(...
         results(i, 2) = {varsToUse(i, :)};
         
         % Run the model, save to results array
-        results(i, 3) = {fcnHandle(tspan, varsToUse(i, :))};
+        [x, y] = fcnHandle(tspan, varsToUse(i, :));
+        results{i, 3} = {x, y};
 
         % Carriage return at the end
         if i == nRuns

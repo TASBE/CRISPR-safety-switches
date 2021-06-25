@@ -1,9 +1,9 @@
 %% Load results
-load('dev-results/20210322-lag.mat');
+load('20210411-test.mat');
 
 %% Set variables
-outpath = 'a/b/c/'; % Must end in /
-experimentName = '210406 test';
+% outpath = 'a/b/c/'; % Must end in /
+experimentName = '210411 test';
 
 %% Plot
 if random
@@ -14,7 +14,7 @@ if random
     nBins = [336 100];
     
     % Plot
-    densityheatmap(results, nBins, cLimits, experimentName, outpath);
+    densityheatmap(results, nBins, cLimits, experimentName);
 else
     variablePos = find(whichVars);
     rainbowplot(results, perturbedVars, variablePos, tspan, experimentName)

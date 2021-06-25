@@ -1,4 +1,4 @@
-function rainbowplot(results, variable, variablePos, tspan, fcnHandle, name, path)
+function rainbowplot(results, variable, variablePos, tspan, name, units, path)
     %% Make outout path path
     % Default path is current path
     if nargin < 7
@@ -6,8 +6,6 @@ function rainbowplot(results, variable, variablePos, tspan, fcnHandle, name, pat
     else
         path = [path, 'plots/'];
     end 
-    
-    disp(path)
     
     % If directory doesn't exist, try to create it
     if ~isfolder(path)
@@ -27,10 +25,8 @@ function rainbowplot(results, variable, variablePos, tspan, fcnHandle, name, pat
     % Plot
     figure;
     for i = 1:length(results)
-        sol = results{i, 3};
-        tint = 1:tspan(end);
-        y = deval(sol, tint);
-        yint = fcnHandle(y);
+        tint = results{i, 3}{1, 1};
+        yint = results{i, 3}{1, 2};
         if i == center
             plot(tint, yint, 'Color', 'black', 'LineWidth', 2);
         else
@@ -53,22 +49,27 @@ function rainbowplot(results, variable, variablePos, tspan, fcnHandle, name, pat
         cb = colorbar('YTickLabel',c);
         ylabel(cb, sprintf('Perturbed Value of %s', variable));
         title(sprintf('Perturbation of %s', variable));
-    else
+    elseif length(variable) == 2
         % Color bar for percentiles
         cb = colorbar;
         caxis([results{1, 1} results{end, 1}]);
         ylabel(cb,'Percentile of Perturbed Varriable(s)');
-        title(sprintf('Perturbation of %s and %s together', variable(1), variable(2))); % Technically only good for two variables
+        title(sprintf('Perturbation of %s and %s together', variable(1), variable(2))); 
+    else
+        cb = colorbar;
+        caxis([results{1, 1} results{end, 1}]);
+        ylabel(cb,'Percentile of Perturbed Varriable(s)');
+        title(sprintf('Joint Perturbation for %s', name));
     end
     grid on;
     xlabel('Time (Hours)');
-    ylabel('Cas9 Plasmid (nM)');
+    ylabel(units);
 
     %%  Save figure
     % Make a clean name
     cleanName = sanitize_filename(name);
     % Output
-    saveas(gcf, [path cleanName '.eps'], 'epsc');
-    saveas(gcf, [path cleanName '.png'], 'png');
-    saveas(gcf, [path cleanName '.fig']);
+    saveas(gcf, [path cleanName '_jointPerturbation.eps'], 'epsc');
+    saveas(gcf, [path cleanName '_jointPerturbation.png'], 'png');
+    saveas(gcf, [path cleanName '_jointPerturbation.fig']);
 end

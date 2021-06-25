@@ -3,13 +3,13 @@ rng('default')
 
 %% Set variables for run
 % Select model to use (use exact name of function)
-fcnHandle = @GeneTherapySystemElimination;
+fcnHandle = @linear;
 
 % Read in a table of fit values
-T = readtable('terms-GeneTherapySystemElimination.csv');
+T = readtable('terms-linear.csv');
 
 % Pick which fit you want to use
-fit = 'name';
+fit = 'fit1';
 
 % Get the variables 
 FitTable = T(:,{'varName', [fit, '_fit'], [fit, '_std']});
@@ -18,13 +18,13 @@ FitTable = T(:,{'varName', [fit, '_fit'], [fit, '_std']});
 vars = table2cell(FitTable);
 
 % Which variable do you want to vary
-perturbedVars = ["lag"];
+perturbedVars = ["Tc"];
 
 % How many times do you want to run it
-nRuns = 10;
+nRuns = 3;
 
 % Set time span
-tspan = [0, 336];
+tspan = [0, 720];
 
 % Pick perturbation type
 random = false;
@@ -38,9 +38,9 @@ random = false;
 % end
 
 %% Pass to perturbation script
-[whichVars, Dist, results] = logNormalPerturbation(fcnHandle, vars, perturbedVars, nRuns, tspan, random);
+[whichVars, results] = logNormalPerturbation(fcnHandle, vars, perturbedVars, nRuns, tspan, random);
 
 %% Save results
-save('202104046-lag.mat', 'Dist', 'results', 'random', 'perturbedVars',...
+save('20210411-test.mat', 'results', 'random', 'perturbedVars',...
     'tspan', 'whichVars');
 
