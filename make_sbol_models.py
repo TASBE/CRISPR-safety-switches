@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import sbol3
 import tyto
 
@@ -27,7 +29,7 @@ def constitutive(target: sbol3.Feature) -> sbol3.Feature:
     return promoter
 
 
-def make_crispr_module(vector: sbol3.Feature) -> tuple[sbol3.Feature, sbol3.Feature]:
+def make_crispr_module(vector: sbol3.Feature) -> Tuple[sbol3.Feature, sbol3.Feature]:
     """Add a CRISPR module to the system, comprising both genome editing and kill switch
 
     :param vector: Vector into which the coding materials for the CRISPR module will be added

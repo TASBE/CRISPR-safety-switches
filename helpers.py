@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 import sbol3
 
@@ -65,7 +65,7 @@ def add_subfeature(container: sbol3.Feature, feature: sbol3.Feature) -> sbol3.Fe
     return feature
 
 
-def add_interaction(system: sbol3.Component, interaction_type: str, participant_map: dict[sbol3.Feature, str]) \
+def add_interaction(system: sbol3.Component, interaction_type: str, participant_map: Dict[sbol3.Feature, str]) \
         -> sbol3.Interaction:
     """Compact function for creation of an interaction
 
