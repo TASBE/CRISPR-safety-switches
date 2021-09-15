@@ -29,7 +29,7 @@ def constitutive(target: sbol3.Feature) -> sbol3.Feature:
     return promoter
 
 
-def make_crispr_module(vector: sbol3.Feature) -> Tuple[sbol3.Feature, sbol3.Feature]:
+def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
     """Add a CRISPR module to the system, comprising both genome editing and kill switch
 
     :param vector: Vector into which the coding materials for the CRISPR module will be added
@@ -47,26 +47,33 @@ def make_crispr_module(vector: sbol3.Feature) -> Tuple[sbol3.Feature, sbol3.Feat
     # Add the sgRNA coding regions
     sgRNA1_dna = add_subfeature(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.sgRNA], name="sgRNA1-coding"))
     sgRNA2_dna = add_subfeature(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.sgRNA], name="sgRNA2-coding"))
+    constitutive(sgRNA2_dna)
 
     # Then their products and binding to Cas9
     sgRNA1 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_RNA], name="sgRNA1"))
     sgRNA2 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_RNA], name="sgRNA2"))
     add_interaction(system, sbol3.SBO_GENETIC_PRODUCTION, {sgRNA1_dna: sbol3.SBO_TEMPLATE, sgRNA1: sbol3.SBO_PRODUCT})
-    add_interaction(system, sbol3.SBO_GENETIC_PRODUCTION, {sgRNA1_dna: sbol3.SBO_TEMPLATE, sgRNA1: sbol3.SBO_PRODUCT})
+    add_interaction(system, sbol3.SBO_GENETIC_PRODUCTION, {sgRNA2_dna: sbol3.SBO_TEMPLATE, sgRNA2: sbol3.SBO_PRODUCT})
     Cas9_sgRNA1 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_NON_COVALENT_COMPLEX], name="Cas9-sgRNA1"))
     Cas9_sgRNA2 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_NON_COVALENT_COMPLEX], name="Cas9-sgRNA2"))
-    add_interaction(system, sbol3.SBO_NON_COVALENT_BINDING,
-                    {sgRNA1: sbol3.SBO_REACTANT, cas9: sbol3.SBO_REACTANT, Cas9_sgRNA1: sbol3.SBO_PRODUCT})
-    add_interaction(system, sbol3.SBO_NON_COVALENT_BINDING,
-                    {sgRNA2: sbol3.SBO_REACTANT, cas9: sbol3.SBO_REACTANT, Cas9_sgRNA2: sbol3.SBO_PRODUCT})
+    add_interaction(system, sbol3.SBO_NON_COVALENT_BINDING, name='Cas-gRNA binding',
+                    participants={sgRNA1: sbol3.SBO_REACTANT, cas9: sbol3.SBO_REACTANT, Cas9_sgRNA1: sbol3.SBO_PRODUCT})
+    add_interaction(system, sbol3.SBO_NON_COVALENT_BINDING, name='Cas-gRNA binding',
+                    participants={sgRNA2: sbol3.SBO_REACTANT, cas9: sbol3.SBO_REACTANT, Cas9_sgRNA2: sbol3.SBO_PRODUCT})
 
     # Finally, the Cas9 complex editing actions
     genome = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='genome'))
-    add_interaction(system, sbol3.SBO_CONTROL, {Cas9_sgRNA1: sbol3.SBO_MODIFIER, genome: sbol3.SBO_MODIFIED})
-    add_interaction(system, sbol3.SBO_DEGRADATION, {Cas9_sgRNA1: sbol3.SBO_REACTANT, vector: sbol3.SBO_REACTANT})
+    add_interaction(system, tyto.SBO.cleavage, name='Cas cleavage',
+                    participants={Cas9_sgRNA1: sbol3.SBO_REACTANT, vector: sbol3.SBO_REACTANT})
+    add_interaction(system, tyto.SBO.cleavage, name='Cas cleavage',
+                    participants={Cas9_sgRNA2: sbol3.SBO_REACTANT, genome: sbol3.SBO_REACTANT})
+    add_interaction(system, sbol3.SBO_DEGRADATION, name='Cas degradation',
+                    participants={Cas9_sgRNA1: sbol3.SBO_REACTANT})
+    add_interaction(system, sbol3.SBO_DEGRADATION, name='Cas degradation',
+                    participants={Cas9_sgRNA2: sbol3.SBO_REACTANT})
 
     # Return the gRNA coding regions for use in establishing regulation
-    return sgRNA1_dna, sgRNA2_dna
+    return sgRNA1_dna
 
 
 def make_tf_module(system: sbol3.Component, repressor: bool):
@@ -81,12 +88,11 @@ def make_recombinase_module(system: sbol3.Component):
 doc = sbol3.Document()
 sbol3.set_namespace(PROJECT_NAMESPACE)
 
-system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY)
+system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Basic Kill Switch")
 doc.add(system)
 
 aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-sgRNA1_dna, sgRNA2_dna = make_crispr_module(aav)
+sgRNA1_dna = make_crispr_module(aav)
 constitutive(sgRNA1_dna)
-constitutive(sgRNA2_dna)
 
 doc.write(MODEL_FILE, sbol3.SORTED_NTRIPLES)

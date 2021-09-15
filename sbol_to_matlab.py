@@ -20,5 +20,5 @@ doc = sbol3.Document()
 # For each system in the document, generate a matlab model
 
 for c in (o for o in doc.objects if isinstance(o, sbol3.Component)):
-    with open(os.path.join('generated_models', c.display_id), 'w') as f:
+    with open(os.path.join('generated_models', f'{c.display_id}.m'), 'w') as f:
         f.write(make_matlab_model(c))

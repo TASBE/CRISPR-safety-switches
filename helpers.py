@@ -65,17 +65,18 @@ def add_subfeature(container: sbol3.Feature, feature: sbol3.Feature) -> sbol3.Fe
     return feature
 
 
-def add_interaction(system: sbol3.Component, interaction_type: str, participant_map: Dict[sbol3.Feature, str]) \
-        -> sbol3.Interaction:
+def add_interaction(system: sbol3.Component, interaction_type: str, participants: Dict[sbol3.Feature, str],
+                    name: str = None) -> sbol3.Interaction:
     """Compact function for creation of an interaction
 
     :param system: system to add interaction to
     :param interaction_type: SBO type of interaction to be to be added
     :param participant_map: dictionary assigning features to roles for participations
+    :param name: name for the interaction
     :return: interaction
     """
-    participations = [sbol3.Participation([r], p) for p, r in participant_map.items()]
-    interaction = sbol3.Interaction([interaction_type], participations=participations)
+    participations = [sbol3.Participation([r], p) for p, r in participants.items()]
+    interaction = sbol3.Interaction([interaction_type], participations=participations, name=name)
     system.interactions.append(interaction)
     return interaction
 
