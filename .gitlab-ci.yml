@@ -18,9 +18,6 @@ cache:
 before_script:
   - python -V  # Print out python version for debugging
   - pip install pytest
-  - pip install virtualenv
-  - virtualenv venv
-  - source venv/bin/activate
 
 stages:
   - Test
@@ -28,4 +25,4 @@ stages:
 unit_test:
   stage: Test
   script:
-    - python3 -m pytest
+    - PYTHONPATH=. pytest
