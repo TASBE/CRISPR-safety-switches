@@ -23,5 +23,5 @@ before_script:
 
 test:
   script:
-    - python setup.py test
-    # - PYTHONPATH=. pytest # potential simpler alternative?
+    #- python setup.py test
+    - PYTHONPATH=. pytest # potential simpler alternative?
