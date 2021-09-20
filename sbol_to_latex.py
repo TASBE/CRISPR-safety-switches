@@ -16,7 +16,8 @@ name_to_symbol = {
     'AAV': '\\vectorGen{}',
     'Cas-gRNA binding': '\\gRnaBind{}',
     'Cas degradation': '\\casCompDegradeRate{}',
-    'Cas cleavage': '\\\casCutRate{}'
+    'Cas cleavage': '\\\casCutRate{}',
+    'TF': '\\proSp{TF}',
 }
 """Dictionary mapping from SBOL names to LaTeX symbols in our convention"""
 
