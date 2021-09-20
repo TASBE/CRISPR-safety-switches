@@ -1,0 +1,12 @@
+image: ubuntu:focal
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+run-test:
+  before_script:
+    - apt-get update -qy
+    - apt-get install -y python-dev python-pip
+    - pip install -r requirements.txt
+  script:
+    - PYTHONPATH=. pytest
