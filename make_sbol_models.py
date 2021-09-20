@@ -5,7 +5,7 @@ import tyto
 
 from helpers import *
 
-MODEL_FILE = 'kill_switch_models.nt'
+MODEL_FILE = '210919_try01.nt'
 PROJECT_NAMESPACE = 'http://bbn.com/crispr-kill-switch'
 
 
@@ -15,7 +15,7 @@ PROJECT_NAMESPACE = 'http://bbn.com/crispr-kill-switch'
 def constitutive(target: sbol3.Feature) -> sbol3.Feature:
     """Add a constitutive promoter regulating the target feature
 
-    :param target: CDS or ncRNA to regular
+    :param target: CDS or ncRNA to regulate
     :return: newly created constitutive promoter
     """
     system: sbol3.Component = get_toplevel(target)
@@ -38,7 +38,7 @@ def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
     # find system containing the vector
     system: sbol3.Component = get_toplevel(vector)
 
-    # Add constitutive Cas9 expression
+    # Add constitutive Cas9 expression # TODO: Change so that it isn't always constitutive
     cas9_cds = add_subfeature(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.CDS], name="Cas9-coding"))
     constitutive(cas9_cds)
     cas9 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_PROTEIN], name="Cas9"))
@@ -76,9 +76,41 @@ def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
     return sgRNA1_dna
 
 
-def make_tf_module(system: sbol3.Component, repressor: bool):
-    pass # TODO: implement
+def make_tf_module(system: sbol3.Component, vector: sbol3.Feature, target: sbol3.Feature, repressor: bool): # TODO: Ask Jake why this is a system and not a vector?
+    """Add a transcription factor module to the system
 
+    :param system: ???
+    :param vector: the AAV genome that this all goes in?
+    :param target: thing that is controlled by the TF
+    :param repressor: True or false, is this TF a repressor or not
+    """
+
+    # I am handed the system
+
+    # Figure out what the vector is
+    # TODO: What is the vector that the cds goes into?
+    # Hand myself the AAV vector
+
+    # Add constitutive expression of the TF # TODO: Make it not just constitutive
+    tf_cds = add_subfeature(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.CDS], name="TF-coding"))
+    constitutive(tf_cds)
+    tf = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_PROTEIN], name="TF"))
+    add_interaction(system, sbol3.SBO_GENETIC_PRODUCTION, {tf_cds: sbol3.SBO_TEMPLATE, tf: sbol3.SBO_PRODUCT})
+
+    # Make the other promoter
+    promoter = add_subfeature(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.promoter]))
+    regulate(promoter, target)
+
+    # Add interactions
+    # TF activation # TODO: Add if statement to make a repressor option
+    add_interaction(system, sbol3.SBO_CONTROL, name='TF Activation',
+                    participants={tf: sbol3.SBO_REACTANT, promoter: sbol3.SBO_REACTANT})
+    # TF degradation
+    add_interaction(system, sbol3.SBO_DEGRADATION, name='TF degradation',
+                    participants={tf: sbol3.SBO_REACTANT})
+
+    # Not sure what I am returning
+    return promoter
 
 def make_recombinase_module(system: sbol3.Component):
     pass # TODO: implement
@@ -95,4 +127,16 @@ aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
 sgRNA1_dna = make_crispr_module(aav)
 constitutive(sgRNA1_dna)
 
+# Try the TF
+system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="TF Kill Switch")
+doc.add(system)
+sgRNA1_dna = make_crispr_module(aav)
+make_tf_module(system, aav, sgRNA1_dna, False)
+
+# Try the Cre
+# system = sbol3.Component('Cre_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Cre recombinase Kill Switch")
+# doc.add(system)
+# sgRNA1_dna = make_recombinase_module(aav)
+
+# Write the model file
 doc.write(MODEL_FILE, sbol3.SORTED_NTRIPLES)
