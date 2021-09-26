@@ -6,17 +6,22 @@ import sbol3
 import tyto
 from sbol_utilities.helper_functions import flatten, id_sort
 
+MODEL_FILE = 'kill_switch_models.nt'
+
 name_to_symbol = {
     'sgRNA1': '\\gRna{1}',
     'sgRNA2': '\\gRna{2}',
     'Cas9': '\\proSp{\\cas{}}',
     'Cas9-sgRNA1': '\\cplx{\\cas}{1}',
     'Cas9-sgRNA2': '\\cplx{\\cas}{2}',
+    'postedit Cas9-sgRNA1': '\\bound{\\cplx{\\cas}{1}}',
+    'postedit Cas9-sgRNA2': '\\bound{\\cplx{\\cas}{2}}',
     'genome': '\\hostGen{}',
+    'edited genome': '\\edited{\\hostGen{}}',
     'AAV': '\\vectorGen{}',
     'Cas-gRNA binding': '\\gRnaBind{}',
     'Cas degradation': '\\casCompDegradeRate{}',
-    'Cas cleavage': '\\\casCutRate{}'
+    'Cas cleavage': '\\casCutRate{}'
 }
 """Dictionary mapping from SBOL names to LaTeX symbols in our convention"""
 
@@ -65,6 +70,7 @@ def in_role(interaction: sbol3.Interaction, role: str) -> sbol3.Feature:
     if len(feature_participation) != 1:
         raise ValueError(f'Role can be in 1 participant: found {len(feature_participation)} in {interaction.identity}')
     return feature_participation[0].participant.lookup()
+
 
 def all_in_role(interaction: sbol3.Interaction, role: str) -> List[sbol3.Feature]:
     """Find the features with a given role in the interaction
@@ -121,7 +127,15 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
             logging.warning(f'Cannot serialize role in {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
     elif i_type == tyto.SBO.cleavage:
         if interaction.name == 'Cas cleavage':
-            pass
+            reactants = [maybe_concentration(f) for f in all_in_role(interaction, sbol3.SBO_REACTANT)]
+            rate = '\\casCutRate{{}}'
+            if role == sbol3.SBO_REACTANT:
+                sign = '-'
+            elif role == sbol3.SBO_PRODUCT:
+                sign = '+'
+            else:
+                raise ValueError (f'Unexpected role in {interaction.identity}: {tyto.SBO.get_term_by_uri(role)}')
+            return f'{sign} {rate}' + ''.join(reactants)
         else:
             raise ValueError(f'No model for cleavage {interaction.name} in {interaction.identity}')
     elif i_type == sbol3.SBO_DEGRADATION:
@@ -147,7 +161,7 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
             sign = '+'
         else:
             raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {interaction.identity}')
-        return f'+ {sign} {rate}' + ''.join(reactants)
+        return f'{sign} {rate}' + ''.join(reactants)
     else:
         logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
         return None
@@ -176,6 +190,7 @@ def make_latex_model(system: sbol3.Component) -> str:
         # If there is at least one term, then add an equation
         if interaction_terms:
             diff_term = differential(f)
+            print(interaction_terms)
             equation_latex.append(diff_term + " ".join(interaction_terms).removeprefix("+"))
 
     ## Generate the actual document
@@ -195,7 +210,7 @@ def make_latex_model(system: sbol3.Component) -> str:
 ##################
 # Run
 doc = sbol3.Document()
-doc.read('kill_switch_models.nt')
+doc.read(MODEL_FILE)
 
 # For each system in the document, generate a matlab model
 with open(os.path.join('generated_models', 'generated_equations.tex'), 'w') as out:

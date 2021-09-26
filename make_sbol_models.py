@@ -5,7 +5,7 @@ import tyto
 
 from helpers import *
 
-MODEL_FILE = '210919_try01.nt'
+MODEL_FILE = 'kill_switch_models.nt'
 PROJECT_NAMESPACE = 'http://bbn.com/crispr-kill-switch'
 
 
@@ -61,16 +61,25 @@ def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
     add_interaction(system, sbol3.SBO_NON_COVALENT_BINDING, name='Cas-gRNA binding',
                     participants={sgRNA2: sbol3.SBO_REACTANT, cas9: sbol3.SBO_REACTANT, Cas9_sgRNA2: sbol3.SBO_PRODUCT})
 
-    # Finally, the Cas9 complex editing actions
+    # Finally, the Cas9 complex editing actions, including "expended" post-edit Cas9
     genome = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='genome'))
+    ex_Cas9_1 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_NON_COVALENT_COMPLEX], name="postedit Cas9-sgRNA1"))
+    ex_Cas9_2 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_NON_COVALENT_COMPLEX], name="postedit Cas9-sgRNA2"))
+    edited_genome = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='edited genome'))
     add_interaction(system, tyto.SBO.cleavage, name='Cas cleavage',
-                    participants={Cas9_sgRNA1: sbol3.SBO_REACTANT, vector: sbol3.SBO_REACTANT})
+                    participants={Cas9_sgRNA1: sbol3.SBO_REACTANT, vector: sbol3.SBO_REACTANT,
+                                  ex_Cas9_1: sbol3.SBO_PRODUCT})
     add_interaction(system, tyto.SBO.cleavage, name='Cas cleavage',
-                    participants={Cas9_sgRNA2: sbol3.SBO_REACTANT, genome: sbol3.SBO_REACTANT})
+                    participants={Cas9_sgRNA2: sbol3.SBO_REACTANT, genome: sbol3.SBO_REACTANT,
+                                  edited_genome: sbol3.SBO_PRODUCT, ex_Cas9_2: sbol3.SBO_PRODUCT})
     add_interaction(system, sbol3.SBO_DEGRADATION, name='Cas degradation',
                     participants={Cas9_sgRNA1: sbol3.SBO_REACTANT})
     add_interaction(system, sbol3.SBO_DEGRADATION, name='Cas degradation',
                     participants={Cas9_sgRNA2: sbol3.SBO_REACTANT})
+    add_interaction(system, sbol3.SBO_DEGRADATION, name='Cas degradation',
+                    participants={ex_Cas9_1: sbol3.SBO_REACTANT})
+    add_interaction(system, sbol3.SBO_DEGRADATION, name='Cas degradation',
+                    participants={ex_Cas9_2: sbol3.SBO_REACTANT})
 
     # Return the gRNA coding regions for use in establishing regulation
     return sgRNA1_dna
@@ -128,10 +137,10 @@ sgRNA1_dna = make_crispr_module(aav)
 constitutive(sgRNA1_dna)
 
 # Try the TF
-system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="TF Kill Switch")
-doc.add(system)
-sgRNA1_dna = make_crispr_module(aav)
-make_tf_module(system, aav, sgRNA1_dna, False)
+# system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="TF Kill Switch")
+# doc.add(system)
+# sgRNA1_dna = make_crispr_module(aav)
+# make_tf_module(system, aav, sgRNA1_dna, False)
 
 # Try the Cre
 # system = sbol3.Component('Cre_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Cre recombinase Kill Switch")
