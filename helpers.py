@@ -40,6 +40,8 @@ def get_toplevel(self: sbol3.Identified) -> Optional[sbol3.TopLevel]:
 ###########################
 # Helper functions
 
+# TODO: migrate these to sbol_utilities
+
 def add_feature(system: sbol3.Component, feature: sbol3.Feature) -> sbol3.Feature:
     """Pass-through adder for allowing slightly more compact code
 
@@ -71,7 +73,7 @@ def add_interaction(system: sbol3.Component, interaction_type: str, participants
 
     :param system: system to add interaction to
     :param interaction_type: SBO type of interaction to be to be added
-    :param participant_map: dictionary assigning features to roles for participations
+    :param participants: dictionary assigning features to roles for participations
     :param name: name for the interaction
     :return: interaction
     """
