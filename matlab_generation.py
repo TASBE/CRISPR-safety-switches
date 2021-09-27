@@ -16,6 +16,19 @@ class VariableDictionary(UserDict):
             self.data[key] = matlab_name(key)
         return self.data[key]
 
+
+class ParameterDictionary(UserDict):
+    """Collection of variables, as a wrapper around a dictionary that auto-adds names for missing keys"""
+
+    def __getitem__(self, key):
+        if key not in self.data:
+            if isinstance(key, str):
+                self.data[key] = string_to_display_id(key)
+            else:
+                self.data[key] = matlab_name(key)  # TODO: Interactions are not Features; fix here or there
+        return self.data[key]
+
+
 def matlab_name(feature: sbol3.Feature) -> str:
     """Get a Matlab-compatible variable name for an object
 
@@ -46,7 +59,7 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
 
 
 def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, regulation: List[sbol3.Interaction],
-                        containers: Dict[sbol3.Feature, List[sbol3.Feature]], parameters: Dict[str, str],
+                        containers: Dict[sbol3.Feature, List[sbol3.Feature]], parameters: ParameterDictionary,
                         variables: VariableDictionary) -> Optional[str]:
     """Generate an equation term for a given interaction, with respect to the included feature
 
@@ -71,88 +84,92 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
     i_type = interaction.types[0]
     f_type = feature.types[0]
     role = feature_participation[0].roles[0]
-    # serialized based on interaction type and role
+
+    # serialize based on interaction type and role
     if i_type == sbol3.SBO_GENETIC_PRODUCTION:
         if role == sbol3.SBO_TEMPLATE:
             return None  # templates don't get equations
         elif role == sbol3.SBO_PRODUCT:
             species = variables[feature]
-            modulation = ' * '.join(regulation_term(r) for r in regulation)
+            modulation = '*'.join(regulation_term(r) for r in regulation)
             # context is the constraints of the template
-            context = ' * '.join(variables[ct] for ct in containers[in_role(interaction,sbol3.SBO_TEMPLATE)])
+            context = '*'.join(variables[ct] for ct in containers[in_role(interaction,sbol3.SBO_TEMPLATE)])
             if f_type == sbol3.SBO_RNA:
-                prod_rate = f'\\txRate{{{species}}}'
-                deg_rate = f'\\rnaDegradeRate{{}}'
+                prod_rate = parameters[f'alpha_r_{species}']
+                deg_rate = parameters[f'delta_g']
             elif f_type == sbol3.SBO_PROTEIN:
-                prod_rate = f'\\txtlRate{{{species}}}'
-                deg_rate = f'\\proDegradeRate{{{species}}}'
+                prod_rate = parameters[f'alpha_p_{species}']
+                deg_rate = parameters[f'delta_{species}']
             else:
                 raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {feature_participation[0]}')
-            return f'+ {" * ".join(filter(None, [prod_rate, modulation, context]))} - {deg_rate} * {species}'
+            return f'+ {"*".join(filter(None, [prod_rate, modulation, context]))} - {deg_rate}*{species}'
         else:
             logging.warning(f'Cannot serialize role in {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
     elif i_type == tyto.SBO.cleavage:
         if interaction.name == 'Cas cleavage':
             reactants = [variables[f] for f in all_in_role(interaction, sbol3.SBO_REACTANT)]
-            rate = '\\casCutRate{{}}'
+            [variables[f] for f in all_in_role(interaction, sbol3.SBO_PRODUCT)] # Get products into the variable table
+            rate = parameters['k_cat']
             if role == sbol3.SBO_REACTANT:
                 sign = '-'
             elif role == sbol3.SBO_PRODUCT:
                 sign = '+'
             else:
                 raise ValueError (f'Unexpected role in {interaction.identity}: {tyto.SBO.get_term_by_uri(role)}')
-            return f'{sign} {rate}' + ''.join(reactants)
+            return f'{sign} {rate}*' + '*'.join(reactants)
         else:
             raise ValueError(f'No model for cleavage {interaction.name} in {interaction.identity}')
     elif i_type == sbol3.SBO_DEGRADATION:
         if len(interaction.participations) != 1:
             raise ValueError(f'Degradation assumed to have 1 participant, found {len(interaction.participations)} in {interaction.identity}')
         if f_type == sbol3.SBO_RNA:
-            deg_rate = f'\\rnaDegradeRate{{}}'
+            deg_rate = parameters[f'delta_g']
         elif f_type == sbol3.SBO_PROTEIN:
             species = variables[feature]
-            deg_rate = f'\\proDegradeRate{{{species}}}'
+            deg_rate = parameters[f'delta_{species}']
         else:
-            deg_rate = matlab_name(interaction)
+            deg_rate = parameters[interaction]  # TODO: move this into actual parameters rather than name
 
-        return f'- {deg_rate}{variables[feature]}'
+        return f'- {deg_rate}*{variables[feature]}'
 
         pass
     elif i_type == sbol3.SBO_NON_COVALENT_BINDING:
         reactants = [variables[f] for f in all_in_role(interaction, sbol3.SBO_REACTANT)]
-        rate = matlab_name(interaction) # TODO: move this into actual parameters rather than name
+        [variables[f] for f in all_in_role(interaction, sbol3.SBO_PRODUCT)]  # Get products into the variable table
+        rate = parameters[interaction]  # TODO: move this into actual parameters rather than name
         if role == sbol3.SBO_REACTANT:
             sign = '-'
         elif role == sbol3.SBO_PRODUCT:
             sign = '+'
         else:
             raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {interaction.identity}')
-        return f'{sign} {rate}' + ''.join(reactants)
+        return f'{sign} {rate}*' + '*'.join(reactants)
     else:
         logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
         return None
 
 
 ode_template = '''
-function [time_interval, y_out, y] = linear(time_span, parameters, initial, step)
+function [time_interval, y_out, y] = {}(time_span, parameters, initial, step)
 % time_span is a vector [start, stop] of seconds
 % parameters is a vector of rate constants, decay rates, Hill coefficients, etc.
 % initial is the initial values for key variables
 % step is the number of seconds between samples in output; defaults to 1
 % Returns vector of time, matrix of output levels at those time points, matrix of all species
     if nargin < 4, step = 1; end
-    % Define names for parameter indexes
-    {}
-    % Define names for variable indexes
+    
+    % Define names for input/output variable indexes
     {}
 
     % Set initial values
-    y0=zeros(1,{})
+    y0=zeros(1,{});
     {}
+    
     % Run ODE
     solution = ode45(@(t,x) diff_eq(t, x, parameters), time_span, y0);
+    
     % Evaluate species levels at given times
-    time_interval = 1:step:tspan(end);
+    time_interval = time_span(1):step:time_span(end);
     y = deval(solution, time_interval);
     y_out = y([{}],:);
 end
@@ -161,19 +178,22 @@ end
 function dx=diff_eq(t, x, parameters)
     % Define names for parameter indexes
     {}
+    
     % Unpack individual species from x
     {}
-    % computer derivative for each species
+    
+    % Compute derivative for each species
     {}
+    
     % Pack derivatives for return
-    dx = [{}];
+    dx = [{}]';
 end
 '''
 """Template for the Matlab simulation, including both the runner and the step function.
 Format parameters are:
 
- 1 Parameter names: PARAMETER = i
- 2 Variable names: VARIABLE = i
+ 1 protocol name
+ 2 Input/output variable names: VARIABLE = i
  3 Number of variables (integer)
  4 Initial value assignments for input variables: y0(VARIABLE) = initial(i)
  5 Output indices: VARIABLE, VARIABLE, ...
@@ -184,10 +204,11 @@ Format parameters are:
 """
 
 
-def format_model(parameters: List[str], variables: List[str], inputs: List[str], outputs: List[str],
+def format_model(name: str, parameters: List[str], variables: List[str], inputs: List[str], outputs: List[str],
                  derivatives: List[str]) -> str:
     """Generate a Matlab ODE simulation from the provided inputs
 
+    :param name: protocol name
     :param parameters: list of parameter names
     :param variables: list of variable names
     :param inputs: list of names of input variables
@@ -196,12 +217,13 @@ def format_model(parameters: List[str], variables: List[str], inputs: List[str],
     :return: string containing contents for Matlab simulation file
     """
     # Make the substructures
-    parameter_names = "\n\t".join(f'{p} = {i}' for p, i in zip(parameters, range(1, len(parameters) + 1)))
-    variable_names = "\n\t".join(f'{v} = {i}' for v, i in zip(variables, range(1, len(variables) + 1)))
-    initializations = "\n\t".join(f'y0({v}) = initial({i})' for v, i in zip(inputs, range(1, len(inputs) + 1)))
-    unpack_variables = "\n\t".join(f'{v} = x({i})' for v, i in zip(variables, range(1, len(variables) + 1)))
+    parameter_names = "\n\t".join(f'{p} = parameters({i});' for p, i in zip(parameters, range(1, len(parameters) + 1)))
+    io_variable_names = "\n\t".join(f'{v} = {i};' for v, i in zip(variables, range(1, len(variables) + 1))
+                                    if v in (set(inputs) | set(outputs)))
+    initializations = "\n\t".join(f'y0({v}) = initial({i});' for v, i in zip(inputs, range(1, len(inputs) + 1)))
+    unpack_variables = "\n\t".join(f'{v} = x({i});' for v, i in zip(variables, range(1, len(variables) + 1)))
     pack_derivatives = ", ".join(f'{differential(v)}' for v in variables)
-    return ode_template.format(parameter_names, variable_names, len(variables), initializations, ", ".join(outputs),
+    return ode_template.format(name, io_variable_names, len(variables), initializations, ", ".join(outputs),
                                parameter_names, unpack_variables, "\n\t".join(derivatives), pack_derivatives)
 
 
@@ -222,7 +244,7 @@ def make_matlab_model(system: sbol3.Component) -> str:
     regulation = {f: flatten(interactions[r] for r in regulators[f]) for f in regulators}
 
     # generate an ODE based on the roles in the interactions
-    parameters = {}  # dictionary of parameter_name : parameter_name
+    parameters = ParameterDictionary()  # dictionary of Interaction/string : parameter_name
     variables = VariableDictionary()  # dictionary of Feature: variable_name
     derivatives = []
 
@@ -232,11 +254,12 @@ def make_matlab_model(system: sbol3.Component) -> str:
         # If there is at least one term, then add an equation
         if interaction_terms:
             diff_term = differential(f)
-            derivatives.append(f'{diff_term} = ' + " ".join(interaction_terms).removeprefix("+"))
+            derivatives.append(f'{diff_term} = {" ".join(interaction_terms).removeprefix("+")};')
 
     ## Generate the actual document
     # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
     # TODO: input/ouput will change to plural after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-    inputs = [v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.input)]
-    outputs = [v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.output)]
-    return format_model(list(parameters.keys()), list(variables.values()), inputs, outputs, derivatives)
+    inputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.input)])
+    outputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.output)])
+    return format_model(system.display_id, sorted(list(parameters.values())), sorted(list(variables.values())),
+                        inputs, outputs, derivatives)

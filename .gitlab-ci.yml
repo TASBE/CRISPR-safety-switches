@@ -16,6 +16,8 @@ cache:
     - venv/
 
 before_script:
+  - apt-add-repository -y ppa:octave/stable
+  - apt-get -y -qq install octave
   - python -V  # Print out python version for debugging
   - pip install pytest
   - pip install -r requirements.txt
