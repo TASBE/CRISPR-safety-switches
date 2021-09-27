@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 import sbol3
 
@@ -7,6 +7,9 @@ import sbol3
 
 
 # TODO: remove after resolution of https://github.com/SynBioDex/pySBOL3/issues/234
+from sbol_utilities.helper_functions import id_sort
+
+
 def get_parent(self: sbol3.Identified) -> Optional[sbol3.Identified]:
     """Find the parent of this child object
 
@@ -94,3 +97,26 @@ def regulate(five_prime: sbol3.Feature, target: sbol3.Feature) -> sbol3.Constrai
     c = sbol3.Constraint(sbol3.SBOL_MEETS, subject=five_prime, object=target)
     system.constraints.append(c)
     return c
+
+
+def in_role(interaction: sbol3.Interaction, role: str) -> sbol3.Feature:
+    """Find the (precisely one) feature with a given role in the interaction
+
+    :param interaction: interaction to search
+    :param role: role to search for
+    :return Feature playing that role
+    """
+    feature_participation = [p for p in interaction.participations if role in p.roles]
+    if len(feature_participation) != 1:
+        raise ValueError(f'Role can be in 1 participant: found {len(feature_participation)} in {interaction.identity}')
+    return feature_participation[0].participant.lookup()
+
+
+def all_in_role(interaction: sbol3.Interaction, role: str) -> List[sbol3.Feature]:
+    """Find the features with a given role in the interaction
+
+    :param interaction: interaction to search
+    :param role: role to search for
+    :return sorted list of Features playing that role
+    """
+    return id_sort([p.participant.lookup() for p in interaction.participations if role in p.roles])

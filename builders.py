@@ -26,7 +26,7 @@ def constitutive(target: sbol3.Feature) -> sbol3.Feature:
     return promoter
 
 
-def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
+def make_crispr_module(vector: sbol3.Feature) -> tuple[sbol3.Feature, sbol3.Feature]:
     """Add a CRISPR module to the system, comprising both genome editing and kill switch
 
     :param vector: Vector into which the coding materials for the CRISPR module will be added
@@ -81,7 +81,7 @@ def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
                     participants={ex_Cas9_2: sbol3.SBO_REACTANT})
 
     # Return the gRNA coding regions for use in establishing regulation
-    return sgRNA1_dna
+    return sgRNA1_dna, genome
 
 
 def make_tf_module(system: sbol3.Component, vector: sbol3.Feature, target: sbol3.Feature, repressor: bool): # TODO: Ask Jake why this is a system and not a vector?

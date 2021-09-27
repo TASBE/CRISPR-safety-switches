@@ -200,6 +200,11 @@
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interaction9> <http://sbols.org/v3#name> "Cas degradation" .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interaction9> <http://sbols.org/v3#type> <https://identifiers.org/SBO:0000179> .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interaction9> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://sbols.org/v3#Interaction> .
+<http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interface1> <http://sbols.org/v3#displayId> "Interface1" .
+<http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interface1> <http://sbols.org/v3#input> <http://bbn.com/crispr-kill-switch/Basic_kill_switch/LocalSubComponent12> .
+<http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interface1> <http://sbols.org/v3#input> <http://bbn.com/crispr-kill-switch/Basic_kill_switch/LocalSubComponent1> .
+<http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interface1> <http://sbols.org/v3#output> <http://bbn.com/crispr-kill-switch/Basic_kill_switch/LocalSubComponent1> .
+<http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interface1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://sbols.org/v3#Interface> .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch/LocalSubComponent10> <http://sbols.org/v3#displayId> "LocalSubComponent10" .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch/LocalSubComponent10> <http://sbols.org/v3#name> "Cas9-sgRNA1" .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch/LocalSubComponent10> <http://sbols.org/v3#type> <https://identifiers.org/SBO:0000253> .
@@ -304,6 +309,7 @@
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch> <http://sbols.org/v3#hasInteraction> <http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interaction7> .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch> <http://sbols.org/v3#hasInteraction> <http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interaction8> .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch> <http://sbols.org/v3#hasInteraction> <http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interaction9> .
+<http://bbn.com/crispr-kill-switch/Basic_kill_switch> <http://sbols.org/v3#hasInterface> <http://bbn.com/crispr-kill-switch/Basic_kill_switch/Interface1> .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch> <http://sbols.org/v3#hasNamespace> <http://bbn.com/crispr-kill-switch> .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch> <http://sbols.org/v3#name> "Basic Kill Switch" .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch> <http://sbols.org/v3#type> <https://identifiers.org/SBO:0000241> .

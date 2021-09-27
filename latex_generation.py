@@ -5,6 +5,8 @@ import sbol3
 import tyto
 from sbol_utilities.helper_functions import flatten, id_sort
 
+from helpers import all_in_role, in_role
+
 name_to_symbol = {
     'sgRNA1': '\\gRna{1}',
     'sgRNA2': '\\gRna{2}',
@@ -56,38 +58,15 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
     return ''  # TODO: implement regulation terms
 
 
-def in_role(interaction: sbol3.Interaction, role: str) -> sbol3.Feature:
-    """Find the (precisely one) feature with a given role in the interaction
-
-    :param interaction: interaction to search
-    :param role: role to search for
-    :return Feature playing that role
-    """
-    feature_participation = [p for p in interaction.participations if role in p.roles]
-    if len(feature_participation) != 1:
-        raise ValueError(f'Role can be in 1 participant: found {len(feature_participation)} in {interaction.identity}')
-    return feature_participation[0].participant.lookup()
-
-
-def all_in_role(interaction: sbol3.Interaction, role: str) -> List[sbol3.Feature]:
-    """Find the features with a given role in the interaction
-
-    :param interaction: interaction to search
-    :param role: role to search for
-    :return sorted list of Features playing that role
-    """
-    return id_sort([p.participant.lookup() for p in interaction.participations if role in p.roles])
-
-
 def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, regulation: List[sbol3.Interaction],
                         containers: Dict[sbol3.Feature,List[sbol3.Feature]]) -> Optional[str]:
     """Generate an equation term for a given interaction, with respect to the included feature
 
-    :param feature:
-    :param interaction:
-    :param regulation:
-    :param containers:
-    :return:
+    :param feature: Target of the term
+    :param interaction: Interaction to get an equation for
+    :param regulation: List of regulation interactions modulating the feature
+    :param containers: Dictionary of container relationships in system
+    :return: LaTeX equation term
     """
     if len(interaction.types) != 1:
         raise ValueError(f'Expected 1 interaction type but found {len(interaction.types)} in {interaction.identity}')
