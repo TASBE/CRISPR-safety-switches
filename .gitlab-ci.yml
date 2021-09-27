@@ -16,6 +16,7 @@ cache:
     - venv/
 
 before_script:
+  - apt-get install python
   - python -V  # Print out python version for debugging
   - pip install pytest
   - pip install -r requirements.txt
