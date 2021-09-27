@@ -73,7 +73,7 @@ def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
                     participants={Cas9_sgRNA2: sbol3.SBO_REACTANT})
 
     # Return the gRNA coding regions for use in establishing regulation
-    return sgRNA1_dna
+    return sgRNA1_dna, sgRNA1
 
 
 def make_tf_module(vector: sbol3.Feature, target: sbol3.Feature, repressor: bool):
@@ -107,9 +107,9 @@ def make_tf_module(vector: sbol3.Feature, target: sbol3.Feature, repressor: bool
     else:
         add_interaction(system, sbol3.SBO_STIMULATION, name='TF Activation',
                         participants={tf: sbol3.SBO_STIMULATOR, promoter: sbol3.SBO_STIMULATED})
-    # TF degradation
-    add_interaction(system, sbol3.SBO_DEGRADATION, name='TF degradation',
-                    participants={tf: sbol3.SBO_REACTANT})
+    # TF degradation # TODO: Remove this, it gave a replicate degradation term
+    # add_interaction(system, sbol3.SBO_DEGRADATION, name='TF degradation',
+    #                 participants={tf: sbol3.SBO_REACTANT})
 
     # Return the cds
     return tf_cds
@@ -143,18 +143,18 @@ doc = sbol3.Document()
 sbol3.set_namespace(PROJECT_NAMESPACE)
 
 # Crispr only model
-system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Basic Kill Switch")
-doc.add(system)
-aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-sgRNA1_dna = make_crispr_module(aav)
-constitutive(sgRNA1_dna)
+# system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Basic Kill Switch")
+# doc.add(system)
+# aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
+# sgRNA1_dna = make_crispr_module(aav)
+# constitutive(sgRNA1_dna)
 
 # Try the TF
 system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="TF Kill Switch")
 doc.add(system)
 aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-sgRNA1_dna = make_crispr_module(aav)
-tf_cds = make_tf_module(aav, sgRNA1_dna, False)
+sgRNA1_dna, sgRNA1_rna = make_crispr_module(aav)
+tf_cds = make_tf_module(aav, sgRNA1_rna, False)
 constitutive(tf_cds)
 
 # Try the Cre

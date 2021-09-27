@@ -52,7 +52,42 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
     :param interaction: Regulation interaction to serialize
     :return: LaTeX serialization
     """
-    return ''  # TODO: implement regulation terms
+    # Need the i and f types
+    # i type to see what type of regulation is happening
+    # f type because the regulation may be happening directly on the RNA sequence or on the regulators in sequence
+    i_type = interaction.types[0]
+    # Are interaction participations the same thing as features
+    print(interaction.participations)
+    # f_type = feature.types[0] # TODO: How to get this without passing another variable?
+    # Hardcode for now
+    f_type = sbol3.SBO_RNA
+    # TODO: How to get the members of the interaction
+    # species = name_to_symbol[feature.name]
+    # Hardcode for now
+    species = f'G_1'
+    # Figure out if I am woking with RNA or protein and set up the variables that are explicit
+    if f_type == sbol3.SBO_RNA:
+        base_prod_rate = f'\\txRate{{{species}}}^0'
+        prod_rate = f'\\txRate{{{species}}}'
+    elif f_type == sbol3.SBO_PROTEIN:
+        base_prod_rate = f'\\txtlRate{{{species}}}^0'
+        prod_rate = f'\\txtlRate{{{species}}}'
+    else:
+        raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {feature_participation[0]}')
+    # Make TF Equations
+    regulator_species = name_to_symbol['TF']
+    if i_type == sbol3.SBO_INHIBITION:
+        regulation_term = "-9999"
+        return(regulation_term)
+    elif i_type == sbol3.SBO_STIMULATION:
+        print("THIS IS A STIMULATION TF")
+        return f'{base_prod_rate}' + '*' + '(' + regulator_species + '^n' + ') / (' 'K_a^n' + regulator_species + '^n)' # TODO: Replace K and n with variables, how to get a frac?
+    # Make Cre equations
+    # elif i_type == cre_recombinase: # TODO: Implement Cre
+    #     pass
+    else:
+        logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
+        return ''
 
 
 def in_role(interaction: sbol3.Interaction, role: str) -> sbol3.Feature:
@@ -149,6 +184,11 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
         else:
             raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {interaction.identity}')
         return f'+ {sign} {rate}' + ''.join(reactants)
+    # I was getting warnings for the regulation interactions that are taken care of in the other function
+    elif i_type == sbol3.SBO_INHIBITION or i_type == sbol3.SBO_STIMULATION:
+        # TODO: Remove this print out to run quietly
+        print("Interaction type", i_type, "is handeled in the \"regulation term\" function.")
+        pass
     else:
         logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
         return None
