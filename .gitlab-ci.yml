@@ -1,4 +1,4 @@
-image: python:latest
+image: ubuntu:focal
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -16,9 +16,7 @@ cache:
     - venv/
 
 before_script:
-  - apt-get -y -qq update
-  - apt-get install -y -qq software-properties-common python-software-properties
-  - apt-get -y -qq install octave
+  - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends octave python3
   - python -V  # Print out python version for debugging
   - pip install pytest
   - pip install -r requirements.txt
