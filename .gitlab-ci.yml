@@ -16,9 +16,9 @@ cache:
     - venv/
 
 before_script:
-  - sudo apt-get -y -qq update
-  - sudo apt-get install -y -qq software-properties-common python-software-properties
-  - sudo apt-get -y -qq install octave
+  - apt-get -y -qq update
+  - apt-get install -y -qq software-properties-common python-software-properties
+  - apt-get -y -qq install octave
   - python -V  # Print out python version for debugging
   - pip install pytest
   - pip install -r requirements.txt
