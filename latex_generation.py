@@ -170,7 +170,7 @@ def make_latex_model(system: sbol3.Component) -> str:
 
     ## Generate the actual document
     # write section header
-    latex =  f'\\subsection{{{system.name or system.display_id}}}\n\label{{s:{system.display_id}}}\n'
+    latex =  f'\\subsection{{{system.name or system.display_id}}}\n\\label{{s:{system.display_id}}}\n'
     latex += f'% Equations generated from {system.identity}\n\n'
     if system.description:
         latex += f'{system.description}\n\n'
