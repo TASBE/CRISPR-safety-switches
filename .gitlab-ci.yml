@@ -1,4 +1,4 @@
-image: python:latest
+image: gnuoctave:octave
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -16,7 +16,6 @@ cache:
     - venv/
 
 before_script:
-  - apt-get -y -qq install octave
   - python -V  # Print out python version for debugging
   - pip install pytest
   - pip install -r requirements.txt
