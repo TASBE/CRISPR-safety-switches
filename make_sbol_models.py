@@ -30,6 +30,7 @@ def constitutive(target: sbol3.Feature) -> sbol3.Feature:
 
 
 def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
+    # TODO: Fix te return statement
     """Add a CRISPR module to the system, comprising both genome editing and kill switch
 
     :param vector: Vector into which the coding materials for the CRISPR module will be added
@@ -79,9 +80,9 @@ def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
 def make_tf_module(vector: sbol3.Feature, target: sbol3.Feature, repressor: bool):
     """Add a transcription factor module to the system
 
-    :param vector: the AAV genome that this all goes in
-    :param target: thing that is controlled by the TF
-    :param repressor: True or false, is this TF a repressor or not
+    :param vector: Vector into which the coding materials for the TF module will be added
+    :param target: Target of TF regulation
+    :param repressor: Boolean value- if the TF is a repressor or not
     """
 
     # find system containing the vector
@@ -102,37 +103,14 @@ def make_tf_module(vector: sbol3.Feature, target: sbol3.Feature, repressor: bool
 
     # Add interactions
     if repressor:
-        add_interaction(system, sbol3.SBO_INHIBITION, name='TF Activation',
+        add_interaction(system, sbol3.SBO_INHIBITION, name='TF Repression',
                         participants={tf: sbol3.SBO_INHIBITOR, promoter: sbol3.SBO_INHIBITED})
     else:
         add_interaction(system, sbol3.SBO_STIMULATION, name='TF Activation',
                         participants={tf: sbol3.SBO_STIMULATOR, promoter: sbol3.SBO_STIMULATED})
-    # TF degradation # TODO: Remove this, it gave a replicate degradation term
-    # add_interaction(system, sbol3.SBO_DEGRADATION, name='TF degradation',
-    #                 participants={tf: sbol3.SBO_REACTANT})
 
     # Return the cds
     return tf_cds
-
-# TODO: Split out the regulation part into its own function
-# Input is cds output is promoter
-# TODO: Modify the constitutive function to make regulated expression?
-# Do I move the regulation component from the tf_module function to here?
-def regulate_tf_expression(target: sbol3.Feature) -> sbol3.Feature:
-    """Add a constitutive promoter regulating the target feature
-
-    :param target: CDS or ncRNA to regulate
-    :return: newly created constitutive promoter
-    """
-    system: sbol3.Component = get_toplevel(target)
-    containers = [c.subject for c in system.constraints
-                  if c.restriction == sbol3.SBOL_CONTAINS and c.object == target.identity]
-    if len(containers) != 1:
-        raise ValueError(f'Should be precisely one container of a constitutive target, but found {len(containers)}')
-    vector = containers[0].lookup()
-    promoter = add_subfeature(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.promoter]))
-    regulate(promoter, target)
-    return promoter
 
 def make_recombinase_module(system: sbol3.Component):
     pass # TODO: implement

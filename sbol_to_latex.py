@@ -52,19 +52,8 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
     :param interaction: Regulation interaction to serialize
     :return: LaTeX serialization
     """
-    # Need the i and f types
-    # i type to see what type of regulation is happening
-    # f type because the regulation may be happening directly on the RNA sequence or on the regulators in sequence
+    # Need i_type to see what type of regulation is happening
     i_type = interaction.types[0]
-    # Are interaction participations the same thing as features
-    print(interaction.participations)
-    # f_type = feature.types[0] # TODO: How to get this without passing another variable?
-    # Hardcode for now
-    f_type = sbol3.SBO_RNA
-    # TODO: How to get the members of the interaction
-    # species = name_to_symbol[feature.name]
-    # Hardcode for now
-    species = f'G_1'
     # Make TF Equations
     if i_type == sbol3.SBO_INHIBITION:
         regulator_species = name_to_symbol['TF']
