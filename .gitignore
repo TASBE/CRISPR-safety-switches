@@ -11,3 +11,7 @@
 __pycache__
 .idea
 *.pyc
+<<<<<<< HEAD
+=======
+/venv/
+>>>>>>> develop
