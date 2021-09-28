@@ -68,7 +68,8 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
     # Make TF Equations
     if i_type == sbol3.SBO_INHIBITION:
         regulator_species = name_to_symbol['TF']
-        regulation_term = "-9999"
+        # TODO: Replace K and n with variables
+        return f'\\frac{{K_R^n}}{{K_R^n + {regulator_species}^n}}' # TODO: Check if I am getting concentrations if needed?
         return(regulation_term)
     elif i_type == sbol3.SBO_STIMULATION:
         regulator_species = name_to_symbol['TF']
