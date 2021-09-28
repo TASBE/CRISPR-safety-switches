@@ -12,7 +12,7 @@ sbol3.set_namespace(PROJECT_NAMESPACE)
 # system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Basic Kill Switch")
 # doc.add(system)
 # aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-# sgRNA1_dna = builders.make_crispr_module(aav)
+# sgRNA1_dna, sgRNA1_rna = builders.make_crispr_module(aav)
 # builders.constitutive(sgRNA1_dna)
 
 # Try the TF

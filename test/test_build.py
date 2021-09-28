@@ -20,7 +20,7 @@ class test_build(unittest.TestCase):
         doc.add(system)
 
         aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-        sgRNA1_dna = builders.make_crispr_module(aav)
+        sgRNA1_dna, sgRNA1_rna = builders.make_crispr_module(aav)
         builders.constitutive(sgRNA1_dna)
 
         generated = latex_generation.make_latex_model(system)
@@ -52,17 +52,17 @@ class test_build(unittest.TestCase):
         doc = sbol3.Document()
         sbol3.set_namespace('http://bbn.com/crispr-kill-switch/')
 
-        system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Basic Kill Switch")
+        system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="TF Kill Switch")
         doc.add(system)
-
         aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-        sgRNA1_dna = builders.make_crispr_module(aav)
-        builders.constitutive(sgRNA1_dna)
+        sgRNA1_dna, sgRNA1_rna = builders.make_crispr_module(aav)
+        tf_cds = builders.make_tf_module(aav, sgRNA1_rna, False)
+        builders.constitutive(tf_cds)
 
         generated = latex_generation.make_latex_model(system)
-        expected = '''\\subsection{Basic Kill Switch}
-\\label{s:Basic_kill_switch}
-% Equations generated from http://bbn.com/crispr-kill-switch/Basic_kill_switch
+        expected = '''\\subsection{TF Kill Switch}
+\\label{s:TF_delayed_kill_switch}
+% Equations generated from http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch
 
 \\begin{align}
 \\diff{\\vectorGen{}}{t} & = - \\casCutRate{{}}\\vectorGen{}\\conc{\\cplx{\\cas}{1}}\\\\ 
@@ -72,15 +72,16 @@ class test_build(unittest.TestCase):
 \\diff{\\conc{\\bound{\\cplx{\\cas}{1}}}}{t} & = - \\casCompDegradeRate{}\\conc{\\bound{\\cplx{\\cas}{1}}} + \\casCutRate{{}}\\vectorGen{}\\conc{\\cplx{\\cas}{1}}\\\\ 
 \\diff{\\conc{\\bound{\\cplx{\\cas}{2}}}}{t} & = - \\casCompDegradeRate{}\\conc{\\bound{\\cplx{\\cas}{2}}} + \\casCutRate{{}}\\conc{\\cplx{\\cas}{2}}\\hostGen{}\\\\ 
 \\diff{\\edited{\\hostGen{}}}{t} & =  \\casCutRate{{}}\\conc{\\cplx{\\cas}{2}}\\hostGen{}\\\\ 
+\\diff{\\conc{\\proSp{TF}}}{t} & =  \\txtlRate{\\proSp{TF}}\\vectorGen{} - \\proDegradeRate{\\proSp{TF}}\\conc{\\proSp{TF}}\\\\ 
 \\diff{\\conc{\\proSp{\\cas{}}}}{t} & =  \\txtlRate{\\proSp{\\cas{}}}\\vectorGen{} - \\proDegradeRate{\\proSp{\\cas{}}}\\conc{\\proSp{\\cas{}}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{2}}\\\\ 
-\\diff{\\conc{\\gRna{1}}}{t} & =  \\txRate{\\gRna{1}}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}}\\\\ 
+\\diff{\\conc{\\gRna{1}}}{t} & =  \\txRate{\\gRna{1}}\\frac{[\\proSp{TF}]^n}{K_a^n + [\\proSp{TF}]^n}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}}\\\\ 
 \\diff{\\conc{\\gRna{2}}}{t} & =  \\txRate{\\gRna{2}}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{2}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{2}}
 \\end{align}
-
 '''
 
         diff = ''.join(difflib.unified_diff(io.StringIO(generated).readlines(), io.StringIO(expected).readlines(),
                                             fromfile='Generated', tofile='Expected'))
         assert not diff, f'Generated value does not match expectation: {diff}'
+
 if __name__ == '__main__':
     unittest.main()
