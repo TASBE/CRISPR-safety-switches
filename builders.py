@@ -3,7 +3,8 @@ import tyto
 
 ###########################
 # Modules:
-from helpers import get_toplevel, add_subfeature, regulate, add_feature, add_interaction
+from sbol_utilities.workarounds import get_toplevel
+from sbol_utilities.component import add_subfeature, regulate, add_feature, add_interaction
 
 
 def constitutive(target: sbol3.Feature) -> sbol3.Feature:

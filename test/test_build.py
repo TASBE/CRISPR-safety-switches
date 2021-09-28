@@ -6,7 +6,7 @@ import sbol3
 
 import builders
 import latex_generation
-from helpers import add_feature
+from sbol_utilities.component import add_feature
 
 
 class TestCircuitBuilding(unittest.TestCase):

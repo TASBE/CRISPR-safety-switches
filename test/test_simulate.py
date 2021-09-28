@@ -10,7 +10,7 @@ import oct2py
 
 import builders
 import matlab_generation
-from helpers import add_feature
+from sbol_utilities.component import add_feature
 
 
 class TestSimulation(unittest.TestCase):
