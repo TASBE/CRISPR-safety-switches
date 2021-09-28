@@ -2,7 +2,12 @@
 ## 09/27/2021
 - Having trouble with the f strings of the regulation term
 - The regulation term will NOT give me the equation for the new transcription rate alone, only as part of the gRNA equation.
+    - Jake says having the Hill equaiton only embedded is fine, solved
 - How do I get rid of the original transcription rate so that I only have the new transcription rate in the formula?
+    - Jake said: Don't put the base rate in the equation, solved
+- Prettied up the equations
+    - Got the frac to be actually split level had to do "\\frac{{a}}{{b}}"
+        - Or use triple brackets if I'm calling a variable
 ## 09/26/2021
 - I got rid of the 2nd degradation term by removing the explicit "degradation" interaction in the model creation (It didn't look like cas had one)
 - I wasn't able to get into the "regulation_term" function that Jake pre-made for me, just nothing was satisfying the conditions

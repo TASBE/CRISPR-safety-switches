@@ -65,23 +65,15 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
     # species = name_to_symbol[feature.name]
     # Hardcode for now
     species = f'G_1'
-    # Figure out if I am woking with RNA or protein and set up the variables that are explicit
-    if f_type == sbol3.SBO_RNA:
-        base_prod_rate = f'\\txRate{{{species}}}^0'
-        prod_rate = f'\\txRate{{{species}}}'
-    elif f_type == sbol3.SBO_PROTEIN:
-        base_prod_rate = f'\\txtlRate{{{species}}}^0'
-        prod_rate = f'\\txtlRate{{{species}}}'
-    else:
-        raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {feature_participation[0]}')
     # Make TF Equations
-    regulator_species = name_to_symbol['TF']
     if i_type == sbol3.SBO_INHIBITION:
+        regulator_species = name_to_symbol['TF']
         regulation_term = "-9999"
         return(regulation_term)
     elif i_type == sbol3.SBO_STIMULATION:
-        print("THIS IS A STIMULATION TF")
-        return f'{base_prod_rate}' + '*' + '(' + regulator_species + '^n' + ') / (' 'K_a^n' + regulator_species + '^n)' # TODO: Replace K and n with variables, how to get a frac?
+        regulator_species = name_to_symbol['TF']
+        # TODO: Replace K and n with variables
+        return f'\\frac{{{regulator_species}^n}}{{K_a^n + {regulator_species}^n}}'
     # Make Cre equations
     # elif i_type == cre_recombinase: # TODO: Implement Cre
     #     pass
