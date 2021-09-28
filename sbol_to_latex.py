@@ -58,12 +58,12 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
     if i_type == sbol3.SBO_INHIBITION:
         regulator_species = name_to_symbol['TF']
         # TODO: Replace K and n with variables
-        return f'\\frac{{K_R^n}}{{K_R^n + {regulator_species}^n}}' # TODO: Check if I am getting concentrations if needed?
+        return f'\\frac{{K_R^n}}{{K_R^n + {regulator_species}^n}}' # TODO: Use maybe_concentrations to add the [], instead of hardcode?
         return(regulation_term)
     elif i_type == sbol3.SBO_STIMULATION:
         regulator_species = name_to_symbol['TF']
         # TODO: Replace K and n with variables
-        return f'\\frac{{{regulator_species}^n}}{{K_a^n + {regulator_species}^n}}'
+        return f'\\frac{{[{regulator_species}]^n}}{{K_a^n + [{regulator_species}]^n}}'
     # Make Cre equations
     # elif i_type == cre_recombinase: # TODO: Implement Cre
     #     pass
@@ -166,10 +166,8 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
         else:
             raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {interaction.identity}')
         return f'+ {sign} {rate}' + ''.join(reactants)
-    # I was getting warnings for the regulation interactions that are taken care of in the other function
     elif i_type == sbol3.SBO_INHIBITION or i_type == sbol3.SBO_STIMULATION:
-        # TODO: Remove this print out to run quietly
-        print("Interaction type", i_type, "is handeled in the \"regulation term\" function.")
+        # Pass for the regulation interactions that are taken care of in the other function, so you don't get a warning
         pass
     else:
         logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
