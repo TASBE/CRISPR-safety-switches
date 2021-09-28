@@ -1,6 +1,6 @@
 # Fdb version 3
-["pdflatex"] 1632838466 "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.tex" "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.pdf" "view_generated_eqns" 1632838466
-  "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.aux" 1632838466 135 b6b8cd473d95f5f9693377d0a080de8f ""
+["pdflatex"] 1632841833 "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.tex" "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.pdf" "view_generated_eqns" 1632841833
+  "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.aux" 1632841833 135 b6b8cd473d95f5f9693377d0a080de8f ""
   "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.tex" 1632169720 2047 08e63b7ae81cf78c08d8be79b65e6e9e ""
   "/etc/texmf/web2c/texmf.cnf" 1570201316 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
@@ -15,6 +15,7 @@
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb" 1480098733 31809 8670ca339bf94e56da1fc21c80635e2a ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb" 1480098733 32762 224316ccc9ad3ca0423a14971cfa7fc1 ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1480098733 32569 5e5ddc8df908dea60932f3c484a54c0d ""
+  "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb" 1480098733 32716 08e384dc442464e7285e891af9f45947 ""
   "/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii" 1480098806 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty" 1480098815 1458 43ab4710dc82f3edeabecd0d099626b2 ""
   "/usr/share/texlive/texmf-dist/tex/generic/oberdiek/etexcmds.sty" 1480098815 7612 729a8cc22a1ee0029997c7f74717ae05 ""
@@ -125,12 +126,12 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1520210507 32485 c64754543d8ac501bea6e75e209ea521 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1610729064 2700761 ac0584cc9514ab21918550a6948c4ee2 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1610729139 4127092 e0d7fe135764e72b88a15ec3f3ad2801 ""
-  "generated_equations.tex" 1632838464 1141 c58983c5a25a9cd706103b22d3c0224b ""
-  "view_generated_eqns.aux" 1632838466 135 b6b8cd473d95f5f9693377d0a080de8f ""
+  "generated_equations.tex" 1632841804 1772 64a1ee4f5c8b38dba67c52d6f5929dd6 ""
+  "view_generated_eqns.aux" 1632841833 135 b6b8cd473d95f5f9693377d0a080de8f ""
   "view_generated_eqns.tex" 1632169720 2047 08e63b7ae81cf78c08d8be79b65e6e9e ""
   (generated)
-  "view_generated_eqns.aux"
-  "view_generated_eqns.pdf"
-  "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.pdf"
-  "view_generated_eqns.log"
   "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.log"
+  "view_generated_eqns.pdf"
+  "view_generated_eqns.log"
+  "/c/Users/hscott/Documents/NIH-CRISPR/perturbation-architecture/generated_models/view_generated_eqns.pdf"
+  "view_generated_eqns.aux"

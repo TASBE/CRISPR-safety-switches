@@ -81,7 +81,7 @@ def make_crispr_module(vector: sbol3.Feature) -> sbol3.Feature:
                     participants={ex_Cas9_2: sbol3.SBO_REACTANT})
 
     # Return the gRNA coding regions for use in establishing regulation
-    return sgRNA1_dna
+    return sgRNA1_dna, sgRNA1
 
 
 def make_tf_module(vector: sbol3.Feature, target: sbol3.Feature, repressor: bool):

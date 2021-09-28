@@ -1,10 +1,7 @@
 import os
-
 import sbol3
-
 import latex_generation
 from shared_global_names import *
-
 
 doc = sbol3.Document()
 doc.read(MODEL_FILE)

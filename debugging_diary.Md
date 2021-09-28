@@ -3,6 +3,7 @@
 - Didn't have to do anything to generalize the latex code, I didn't need f_type or feature name anymore
 - Cleaned up all the extra stuff in the make_sbol_models code
 - Hardcoded the addition on [] to the hill equations
+- Resolved the merge conflicts very manually, how to do it better?
 ## 09/27/2021
 - Having trouble with the f strings of the regulation term
 - The regulation term will NOT give me the equation for the new transcription rate alone, only as part of the gRNA equation.

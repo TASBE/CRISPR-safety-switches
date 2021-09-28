@@ -177,6 +177,9 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
         else:
             raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {interaction.identity}')
         return f'{sign} {rate}' + ''.join(reactants)
+    elif i_type == sbol3.SBO_INHIBITION or i_type == sbol3.SBO_STIMULATION:
+        # Pass for the regulation interactions that are taken care of in the other function, so you don't get a warning
+        pass
     else:
         logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
         return None
