@@ -1,6 +1,5 @@
 import sbol3
-# import builders # I couldn't get it to work like this, had to do:
-from builders import *
+import builders
 from helpers import add_feature
 from shared_global_names import *
 
@@ -20,9 +19,9 @@ sbol3.set_namespace(PROJECT_NAMESPACE)
 system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="TF Kill Switch")
 doc.add(system)
 aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-sgRNA1_dna, sgRNA1_rna = make_crispr_module(aav)
-tf_cds = make_tf_module(aav, sgRNA1_rna, False)
-constitutive(tf_cds)
+sgRNA1_dna, sgRNA1_rna = builders.make_crispr_module(aav)
+tf_cds = builders.make_tf_module(aav, sgRNA1_rna, False)
+builders.constitutive(tf_cds)
 
 # Try the Cre
 # system = sbol3.Component('Cre_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Cre recombinase Kill Switch")
