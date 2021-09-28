@@ -1,6 +1,6 @@
 import logging
-from collections import MutableMapping, UserDict
-from typing import Dict, List, Optional, Union
+from collections import UserDict
+from typing import Dict, List, Optional, Union, Tuple
 
 import sbol3
 import tyto
@@ -152,7 +152,7 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
 ode_template = '''
 function [time_interval, y_out, y] = {}(time_span, parameters, initial, step)
 % time_span is a vector [start, stop] of seconds
-% parameters is a vector of rate constants, decay rates, Hill coefficients, etc.
+% parameters is a Map of names to numbers (e.g., rate constants, decay rates, Hill coefficients)
 % initial is the initial values for key variables
 % step is the number of seconds between samples in output; defaults to 1
 % Returns vector of time, matrix of output levels at those time points, matrix of all species
@@ -176,7 +176,7 @@ end
 
 % ODE differential function
 function dx=diff_eq(t, x, parameters)
-    % Define names for parameter indexes
+    % Unpack parameters from parameter map
     {}
     
     % Unpack individual species from x
@@ -217,26 +217,25 @@ def format_model(name: str, parameters: List[str], variables: List[str], inputs:
     :return: string containing contents for Matlab simulation file
     """
     # Make the substructures
-    parameter_names = "\n\t".join(f'{p} = parameters({i});' for p, i in zip(parameters, range(1, len(parameters) + 1)))
+    parameter_names = "\n\t".join(f'{p} = parameters(\'{p}\');' for p in parameters)
     io_variable_names = "\n\t".join(f'{v} = {i};' for v, i in zip(variables, range(1, len(variables) + 1))
                                     if v in (set(inputs) | set(outputs)))
     initializations = "\n\t".join(f'y0({v}) = initial({i});' for v, i in zip(inputs, range(1, len(inputs) + 1)))
-    unpack_variables = "\n\t".join(f'{v} = x({i});' for v, i in zip(variables, range(1, len(variables) + 1)))
+    unpack_variables = "\n\t".join(f'{v} = x({i});' for v, i in zip(variables, range(1, len(parameters) + 1)))
     pack_derivatives = ", ".join(f'{differential(v)}' for v in variables)
     return ode_template.format(name, io_variable_names, len(variables), initializations, ", ".join(outputs),
                                parameter_names, unpack_variables, "\n\t".join(derivatives), pack_derivatives)
 
 
-def make_matlab_model(system: sbol3.Component) -> str:
+def make_matlab_model(system: sbol3.Component) -> Tuple[str,List[str]]:
     """Generate a set of LaTeX equations for the identified system:
 
     :param system: system for which a model is to be generated
     :return: string serialization of LaTeX equation collection
     """
     # for each feature, collect all of the interactions and constraints that it participates in
-    interactions = {f: [i for i in system.interactions
-                           if [p for p in i.participations if p.participant == f.identity]]
-                       for f in system.features}
+    interactions = {f: [i for i in system.interactions if [p for p in i.participations if p.participant == f.identity]]
+                    for f in system.features}
     containers = {f: [c.subject.lookup() for c in system.constraints if c.restriction == sbol3.SBOL_CONTAINS and c.object == f.identity]
                   for f in system.features}
     regulators = {f: [c.subject.lookup() for c in system.constraints if c.restriction == sbol3.SBOL_MEETS and c.object == f.identity]
@@ -256,10 +255,13 @@ def make_matlab_model(system: sbol3.Component) -> str:
             diff_term = differential(f)
             derivatives.append(f'{diff_term} = {" ".join(interaction_terms).removeprefix("+")};')
 
-    ## Generate the actual document
+    # Generate the actual document
     # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
     # TODO: input/ouput will change to plural after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
+    parameter_names = sorted(list(parameters.values()))
+    variable_names = sorted(list(variables.values()))
     inputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.input)])
     outputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.output)])
-    return format_model(system.display_id, sorted(list(parameters.values())), sorted(list(variables.values())),
-                        inputs, outputs, derivatives)
+    model = format_model(system.display_id, parameter_names, variable_names, inputs, outputs, derivatives)
+
+    return model, parameter_names

@@ -1,8 +1,10 @@
+import filecmp
 import os
 import tempfile
 import unittest
 from shutil import copy
 
+import numpy
 import sbol3
 import oct2py
 
@@ -11,7 +13,7 @@ import matlab_generation
 from helpers import add_feature
 
 
-class test_simulate(unittest.TestCase):
+class TestSimulation(unittest.TestCase):
 
     def test_kill_switch(self):
         """Make sure running the basic kill switch produces reasonable values"""
@@ -34,22 +36,32 @@ class test_simulate(unittest.TestCase):
         tmp_dir = tempfile.mkdtemp()
         test_dir = os.path.dirname(os.path.realpath(__file__))
         copy(os.path.join(test_dir, 'test_files', 'deval.m'), tmp_dir)
-        with open(os.path.join(tmp_dir,'Basic_kill_switch.m'),'w') as f:
-            f.write(matlab_generation.make_matlab_model(system))
+        with open(os.path.join(tmp_dir, 'Basic_kill_switch.m'), 'w') as f:
+            model, parameters = matlab_generation.make_matlab_model(system)
+            f.write(model)
+
+        # check the the model generated is as expected
+        comparison_file = os.path.join(test_dir, 'test_files', 'Basic_kill_switch.m')
+        assert filecmp.cmp(os.path.join(tmp_dir, 'Basic_kill_switch.m'), comparison_file)
 
         # run the simulation and make sure outcomes are reasonable
         oc = oct2py.Oct2Py()
         oc.eval(f'cd {tmp_dir}')
-        oc.eval('[t,y_out,y] = Basic_kill_switch([0 72],ones(1,12), [10 1]);')
+        oc.eval(f'parameters = containers.Map();')
+        for p in parameters:
+            oc.eval(f'parameters(\'{p}\') = 1;')
+        oc.eval('[t,y_out,y] = Basic_kill_switch([0 72], parameters, [10 1]);')
         # check variable values in numpy arrays
         t = oc.pull('t')
+        assert isinstance(t, numpy.ndarray)
         # time progresses reasonably
-        assert t.size == 73 and t[0,0] == 0 and t[0,-1] == 72
+        assert t.size == 73 and t[0, 0] == 0 and t[0, -1] == 72
         # 10 plasmids decay to 1 over time
         y_out = oc.pull('y_out')
+        assert isinstance(y_out, numpy.ndarray)
         assert y_out.size == t.size
-        assert y_out[0,0] > 9.99999
-        assert y_out[0,-1] < 0.15
+        assert y_out[0, 0] > 9.99999
+        assert y_out[0, -1] < 0.15
 
 if __name__ == '__main__':
     unittest.main()

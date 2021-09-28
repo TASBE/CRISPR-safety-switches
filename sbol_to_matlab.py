@@ -1,5 +1,4 @@
 import os
-from typing import List
 
 import sbol3
 
@@ -14,4 +13,5 @@ doc.read(MODEL_FILE)
 # Model has three parts:
 for c in (o for o in doc.objects if isinstance(o, sbol3.Component)):
     with open(os.path.join('generated_models', f'{c.display_id}.m'), 'w') as out:
-        out.write(matlab_generation.make_matlab_model(c))
+        model, parameters = matlab_generation.make_matlab_model(c)
+        out.write(model)

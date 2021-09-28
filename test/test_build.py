@@ -9,7 +9,7 @@ import latex_generation
 from helpers import add_feature
 
 
-class test_build(unittest.TestCase):
+class TestCircuitBuilding(unittest.TestCase):
 
     def test_kill_switch(self):
         """Make sure that the basic kill switch generates the right structure and from it the right LaTeX"""
