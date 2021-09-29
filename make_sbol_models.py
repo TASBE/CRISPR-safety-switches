@@ -1,6 +1,6 @@
 import sbol3
 import builders
-from helpers import add_feature
+from sbol_utilities.component import add_feature
 from shared_global_names import *
 
 ###########################
