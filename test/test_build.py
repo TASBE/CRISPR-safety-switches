@@ -6,10 +6,10 @@ import sbol3
 
 import builders
 import latex_generation
-from helpers import add_feature
+from sbol_utilities.component import add_feature
 
 
-class test_build(unittest.TestCase):
+class TestCircuitBuilding(unittest.TestCase):
 
     def test_kill_switch(self):
         """Make sure that the basic kill switch generates the right structure and from it the right LaTeX"""
@@ -20,8 +20,12 @@ class test_build(unittest.TestCase):
         doc.add(system)
 
         aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-        sgRNA1_dna, sgRNA1_rna = builders.make_crispr_module(aav)
+        sgRNA1_dna, genome, sgRNA1_rna = builders.make_crispr_module(aav)
         builders.constitutive(sgRNA1_dna)
+        # TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
+        interface = sbol3.Interface(input=[aav, genome], output=[aav])
+        # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
+        system.interfaces = interface
 
         generated = latex_generation.make_latex_model(system)
         expected = '''\\subsection{Basic Kill Switch}
@@ -55,7 +59,7 @@ class test_build(unittest.TestCase):
         system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="TF Kill Switch")
         doc.add(system)
         aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-        sgRNA1_dna, sgRNA1_rna = builders.make_crispr_module(aav)
+        sgRNA1_dna, genome, sgRNA1_rna = builders.make_crispr_module(aav)
         tf_cds = builders.make_tf_module(aav, sgRNA1_rna, False)
         builders.constitutive(tf_cds)
 
@@ -77,6 +81,7 @@ class test_build(unittest.TestCase):
 \\diff{\\conc{\\gRna{1}}}{t} & =  \\txRate{\\gRna{1}}\\frac{[\\proSp{TF}]^n}{K_a^n + [\\proSp{TF}]^n}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}}\\\\ 
 \\diff{\\conc{\\gRna{2}}}{t} & =  \\txRate{\\gRna{2}}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{2}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{2}}
 \\end{align}
+
 '''
 
         diff = ''.join(difflib.unified_diff(io.StringIO(generated).readlines(), io.StringIO(expected).readlines(),
