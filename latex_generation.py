@@ -1,11 +1,12 @@
 import logging
+import itertools
 from typing import Dict, List, Optional
 
 import sbol3
 import tyto
-from sbol_utilities.helper_functions import flatten, id_sort
+from sbol_utilities.workarounds import id_sort
 
-from helpers import all_in_role, in_role
+from sbol_utilities.component import all_in_role, in_role
 
 name_to_symbol = {
     'sgRNA1': '\\gRna{1}',
@@ -157,7 +158,7 @@ def make_latex_model(system: sbol3.Component) -> str:
                   for f in system.features}
     regulators = {f: [c.subject.lookup() for c in system.constraints if c.restriction == sbol3.SBOL_MEETS and c.object == f.identity]
                   for f in system.features}
-    regulation = {f: flatten(interactions[r] for r in regulators[f]) for f in regulators}
+    regulation = {f: itertools.chain(*(interactions[r] for r in regulators[f])) for f in regulators}
 
     # generate an ODE based on the roles in the interactions
     equation_latex = []

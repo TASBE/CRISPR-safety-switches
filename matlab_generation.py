@@ -1,12 +1,13 @@
 import logging
+import itertools
 from collections import UserDict
 from typing import Dict, List, Optional, Union, Tuple
 
 import sbol3
 import tyto
-from sbol_utilities.helper_functions import flatten, id_sort, string_to_display_id
-
-from helpers import in_role, all_in_role
+from sbol_utilities.helper_functions import string_to_display_id
+from sbol_utilities.workarounds import id_sort
+from sbol_utilities.component import in_role, all_in_role
 
 class VariableDictionary(UserDict):
     """Collection of variables, as a wrapper around a dictionary that auto-adds names for missing keys"""
@@ -240,7 +241,7 @@ def make_matlab_model(system: sbol3.Component) -> Tuple[str,List[str]]:
                   for f in system.features}
     regulators = {f: [c.subject.lookup() for c in system.constraints if c.restriction == sbol3.SBOL_MEETS and c.object == f.identity]
                   for f in system.features}
-    regulation = {f: flatten(interactions[r] for r in regulators[f]) for f in regulators}
+    regulation = {f: itertools.chain(*(interactions[r] for r in regulators[f])) for f in regulators}
 
     # generate an ODE based on the roles in the interactions
     parameters = ParameterDictionary()  # dictionary of Interaction/string : parameter_name
