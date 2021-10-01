@@ -1,4 +1,3 @@
-
 function [time_interval, y_out, y] = Basic_kill_switch(time_span, parameters, initial, step)
 % time_span is a vector [start, stop] of seconds
 % parameters is a Map of names to numbers (e.g., rate constants, decay rates, Hill coefficients)

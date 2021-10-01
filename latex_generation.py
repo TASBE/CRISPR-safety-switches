@@ -61,19 +61,18 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
     i_type = interaction.types[0]
     # Make TF Equations
     if i_type == sbol3.SBO_INHIBITION:
-        regulator_species = name_to_symbol['TF']
+        regulator = in_role(interaction, sbol3.SBO_INHIBITOR)
         # TODO: Replace K and n with variables
-        return f'\\frac{{(K_R)^n}}{{(K_R)^n + {regulator_species}^n}}' # TODO: Use maybe_concentrations to add the [], instead of hardcode?
-        return(regulation_term)
+        return f'\\frac{{(K_R)^n}}{{(K_R)^n + {maybe_concentration(regulator)}^n}}'
     elif i_type == sbol3.SBO_STIMULATION:
-        regulator_species = name_to_symbol['TF']
+        regulator = in_role(interaction, sbol3.SBO_STIMULATOR)
         # TODO: Replace K and n with variables
-        return f'\\frac{{[{regulator_species}]^n}}{{(K_A)^n + [{regulator_species}]^n}}'
+        return f'\\frac{{{maybe_concentration(regulator)}^n}}{{(K_A)^n + {maybe_concentration(regulator)}^n}}'
     # Make Cre equations
     # elif i_type == cre_recombinase: # TODO: Implement Cre
     #     pass
     else:
-        logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
+        logging.warning(f'Cannot serialize regulation {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
         return ''
 
 
