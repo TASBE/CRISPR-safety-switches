@@ -71,7 +71,7 @@ class TestCircuitBuilding(unittest.TestCase):
 % Equations generated from http://bbn.com/crispr-kill-switch/Repression
 
 \\begin{align}
-\\diff{\\conc{\\proSp{\\cas{}}}}{t} & =  \\txtlRate{\\proSp{\\cas{}}}\\frac{(K_R)^n}{(K_R)^n + \conc{\\proSp{TF}}^n}\\vectorGen{} - \\proDegradeRate{\\proSp{\\cas{}}}\\conc{\\proSp{\\cas{}}}\\\\
+\\diff{\\conc{\\proSp{\\cas{}}}}{t} & =  \\txtlRate{\\proSp{\\cas{}}}\\frac{(K_R)^n}{(K_R)^n + \\conc{\\proSp{TF}}^n}\\vectorGen{} - \\proDegradeRate{\\proSp{\\cas{}}}\\conc{\\proSp{\\cas{}}}\\\\
 \\diff{\\conc{\\proSp{TF}}}{t} & =  \\txtlRate{\\proSp{TF}}\\vectorGen{} - \\proDegradeRate{\\proSp{TF}}\\conc{\\proSp{TF}}
 \\end{align}
 
@@ -109,7 +109,7 @@ class TestCircuitBuilding(unittest.TestCase):
 \\diff{\\edited{\\hostGen{}}}{t} & =  \\casCutRate{{}}\\conc{\\cplx{\\cas}{2}}\\hostGen{}\\\\
 \\diff{\\conc{\\proSp{TF}}}{t} & =  \\txtlRate{\\proSp{TF}}\\vectorGen{} - \\proDegradeRate{\\proSp{TF}}\\conc{\\proSp{TF}}\\\\
 \\diff{\\conc{\\proSp{\\cas{}}}}{t} & =  \\txtlRate{\\proSp{\\cas{}}}\\vectorGen{} - \\proDegradeRate{\\proSp{\\cas{}}}\\conc{\\proSp{\\cas{}}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{2}}\\\\
-\\diff{\\conc{\\gRna{1}}}{t} & =  \\txRate{\\gRna{1}}\\frac{\conc{\\proSp{TF}}^n}{(K_A)^n + \conc{\\proSp{TF}}^n}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}}\\\\
+\\diff{\\conc{\\gRna{1}}}{t} & =  \\txRate{\\gRna{1}}\\frac{\\conc{\\proSp{TF}}^n}{(K_A)^n + \\conc{\\proSp{TF}}^n}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}}\\\\
 \\diff{\\conc{\\gRna{2}}}{t} & =  \\txRate{\\gRna{2}}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{2}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{2}}
 \\end{align}
 
