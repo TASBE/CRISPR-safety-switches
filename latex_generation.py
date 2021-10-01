@@ -63,12 +63,12 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
     if i_type == sbol3.SBO_INHIBITION:
         regulator_species = name_to_symbol['TF']
         # TODO: Replace K and n with variables
-        return f'\\frac{{K_R^n}}{{K_R^n + {regulator_species}^n}}' # TODO: Use maybe_concentrations to add the [], instead of hardcode?
+        return f'\\frac{{(K_R)^n}}{{(K_R)^n + {regulator_species}^n}}' # TODO: Use maybe_concentrations to add the [], instead of hardcode?
         return(regulation_term)
     elif i_type == sbol3.SBO_STIMULATION:
         regulator_species = name_to_symbol['TF']
         # TODO: Replace K and n with variables
-        return f'\\frac{{[{regulator_species}]^n}}{{K_a^n + [{regulator_species}]^n}}'
+        return f'\\frac{{[{regulator_species}]^n}}{{(K_A)^n + [{regulator_species}]^n}}'
     # Make Cre equations
     # elif i_type == cre_recombinase: # TODO: Implement Cre
     #     pass

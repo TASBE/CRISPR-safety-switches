@@ -6,7 +6,7 @@ import sbol3
 
 import builders
 import latex_generation
-from sbol_utilities.component import add_feature
+from sbol_utilities.component import add_feature, constitutive, regulate
 
 
 class TestCircuitBuilding(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestCircuitBuilding(unittest.TestCase):
 
         aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
         sgRNA1_dna, genome, sgRNA1_rna = builders.make_crispr_module(aav)
-        builders.constitutive(sgRNA1_dna)
+        constitutive(sgRNA1_dna)
         # TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
         interface = sbol3.Interface(input=[aav, genome], output=[aav])
         # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
@@ -60,8 +60,9 @@ class TestCircuitBuilding(unittest.TestCase):
         doc.add(system)
         aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
         sgRNA1_dna, genome, sgRNA1_rna = builders.make_crispr_module(aav)
-        tf_cds = builders.make_tf_module(aav, sgRNA1_rna, False)
-        builders.constitutive(tf_cds)
+        tf_cds, tf_promoter = builders.make_tf_module(aav, False)
+        regulate(tf_promoter, sgRNA1_rna)
+        constitutive(tf_cds)
 
         generated = latex_generation.make_latex_model(system)
         expected = '''\\subsection{TF Kill Switch}
@@ -78,7 +79,7 @@ class TestCircuitBuilding(unittest.TestCase):
 \\diff{\\edited{\\hostGen{}}}{t} & =  \\casCutRate{{}}\\conc{\\cplx{\\cas}{2}}\\hostGen{}\\\\ 
 \\diff{\\conc{\\proSp{TF}}}{t} & =  \\txtlRate{\\proSp{TF}}\\vectorGen{} - \\proDegradeRate{\\proSp{TF}}\\conc{\\proSp{TF}}\\\\ 
 \\diff{\\conc{\\proSp{\\cas{}}}}{t} & =  \\txtlRate{\\proSp{\\cas{}}}\\vectorGen{} - \\proDegradeRate{\\proSp{\\cas{}}}\\conc{\\proSp{\\cas{}}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{2}}\\\\ 
-\\diff{\\conc{\\gRna{1}}}{t} & =  \\txRate{\\gRna{1}}\\frac{[\\proSp{TF}]^n}{K_a^n + [\\proSp{TF}]^n}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}}\\\\ 
+\\diff{\\conc{\\gRna{1}}}{t} & =  \\txRate{\\gRna{1}}\\frac{[\\proSp{TF}]^n}{(K_A)^n + [\\proSp{TF}]^n}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{1}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{1}}\\\\ 
 \\diff{\\conc{\\gRna{2}}}{t} & =  \\txRate{\\gRna{2}}\\vectorGen{} - \\rnaDegradeRate{}\\conc{\\gRna{2}} - \\gRnaBind{}\\conc{\\proSp{\\cas{}}}\\conc{\\gRna{2}}
 \\end{align}
 

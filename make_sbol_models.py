@@ -1,6 +1,6 @@
 import sbol3
 import builders
-from sbol_utilities.component import add_feature
+from sbol_utilities.component import add_feature, regulate
 from shared_global_names import *
 
 ###########################
@@ -28,11 +28,12 @@ interface = sbol3.Interface(input=[aav, genome], output=[aav])
 system.interfaces = interface
 
 # Try the TF
-system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="TF Kill Switch")
+system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Repressor on Kill Switch")
 doc.add(system)
 aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
 sgRNA1_dna, genome, sgRNA1_rna = builders.make_crispr_module(aav)
-tf_cds = builders.make_tf_module(aav, sgRNA1_rna, False)
+tf_cds, tf_promoter = builders.make_tf_module(aav, False)
+regulate(tf_promoter, sgRNA1_rna)
 builders.constitutive(tf_cds)
 
 # Try the Cre
