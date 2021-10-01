@@ -77,13 +77,14 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
         return ''
 
 
-def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, regulation: List[sbol3.Interaction],
-                        containers: Dict[sbol3.Feature,List[sbol3.Feature]]) -> Optional[str]:
+def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction,
+                        regulation: Dict[sbol3.Feature, List[sbol3.Interaction]],
+                        containers: Dict[sbol3.Feature, List[sbol3.Feature]]) -> Optional[str]:
     """Generate an equation term for a given interaction, with respect to the included feature
 
     :param feature: Target of the term
     :param interaction: Interaction to get an equation for
-    :param regulation: List of regulation interactions modulating the feature
+    :param regulation: Dictionary of regulation interactions in the system
     :param containers: Dictionary of container relationships in system
     :return: LaTeX equation term
     """
@@ -103,12 +104,14 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
     # serialized based on interaction type and role
     if i_type == sbol3.SBO_GENETIC_PRODUCTION:
         if role == sbol3.SBO_TEMPLATE:
-            return None  # templates don't get equations
+            return None  # templates don't get equations - they are taken as regulator for products
         elif role == sbol3.SBO_PRODUCT:
             species = name_to_symbol[feature.name]
-            modulation = ''.join(regulation_term(r) for r in regulation)
+            template = in_role(interaction,sbol3.SBO_TEMPLATE)
+            # modulation is the regulation of either the template or the product
+            modulation = ''.join(regulation_term(r) for r in regulation[feature] + regulation[template])
             # context is the constraints of the template
-            context = ''.join(maybe_concentration(ct) for ct in containers[in_role(interaction,sbol3.SBO_TEMPLATE)])
+            context = ''.join(maybe_concentration(ct) for ct in containers[template])
             if f_type == sbol3.SBO_RNA:
                 prod_rate = f'\\txRate{{{species}}}'
                 deg_rate = f'\\rnaDegradeRate{{}}'
@@ -179,12 +182,12 @@ def make_latex_model(system: sbol3.Component) -> str:
                   for f in system.features}
     regulators = {f: [c.subject.lookup() for c in system.constraints if c.restriction == sbol3.SBOL_MEETS and c.object == f.identity]
                   for f in system.features}
-    regulation = {f: itertools.chain(*(interactions[r] for r in regulators[f])) for f in regulators}
+    regulation = {f: list(itertools.chain(*(interactions[r] for r in regulators[f]))) for f in regulators}
 
     # generate an ODE based on the roles in the interactions
     equation_latex = []
     for f in id_sort(system.features):
-        interaction_terms = [t for t in [interaction_to_term(f, i, regulation[f], containers) for i in id_sort(interactions[f])] if t]
+        interaction_terms = [t for t in [interaction_to_term(f, i, regulation, containers) for i in id_sort(interactions[f])] if t]
         # If there is at least one term, then add an equation
         if interaction_terms:
             diff_term = differential(f)
@@ -198,7 +201,7 @@ def make_latex_model(system: sbol3.Component) -> str:
         latex += f'{system.description}\n\n'
     # write equations
     latex += f'\\begin{{align}}\n'
-    latex += '\\\\ \n'.join(equation_latex)
+    latex += '\\\\\n'.join(equation_latex)
     latex += f'\n\\end{{align}}\n\n'
 
     return latex

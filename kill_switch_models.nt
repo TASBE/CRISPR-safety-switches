@@ -315,7 +315,7 @@
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch> <http://sbols.org/v3#type> <https://identifiers.org/SBO:0000241> .
 <http://bbn.com/crispr-kill-switch/Basic_kill_switch> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://sbols.org/v3#Component> .
 <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/Constraint10> <http://sbols.org/v3#displayId> "Constraint10" .
-<http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/Constraint10> <http://sbols.org/v3#object> <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/LocalSubComponent8> .
+<http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/Constraint10> <http://sbols.org/v3#object> <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/LocalSubComponent5> .
 <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/Constraint10> <http://sbols.org/v3#restriction> <http://sbols.org/v3#meets> .
 <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/Constraint10> <http://sbols.org/v3#subject> <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/LocalSubComponent18> .
 <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/Constraint10> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://sbols.org/v3#Constraint> .
@@ -683,6 +683,6 @@
 <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch> <http://sbols.org/v3#hasInteraction> <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/Interaction8> .
 <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch> <http://sbols.org/v3#hasInteraction> <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch/Interaction9> .
 <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch> <http://sbols.org/v3#hasNamespace> <http://bbn.com/crispr-kill-switch> .
-<http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch> <http://sbols.org/v3#name> "TF Kill Switch" .
+<http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch> <http://sbols.org/v3#name> "Repressor on Kill Switch" .
 <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch> <http://sbols.org/v3#type> <https://identifiers.org/SBO:0000241> .
 <http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://sbols.org/v3#Component> .

@@ -19,7 +19,7 @@ system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name=
 doc.add(system)
 
 aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-sgRNA1_dna, genome, sgRNA1_rna = builders.make_crispr_module(aav)
+sgRNA1_dna, genome = builders.make_crispr_module(aav)
 builders.constitutive(sgRNA1_dna)
 
 # TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
@@ -31,9 +31,9 @@ system.interfaces = interface
 system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Repressor on Kill Switch")
 doc.add(system)
 aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-sgRNA1_dna, genome, sgRNA1_rna = builders.make_crispr_module(aav)
+sgRNA1_dna, genome = builders.make_crispr_module(aav)
 tf_cds, tf_promoter = builders.make_tf_module(aav, False)
-regulate(tf_promoter, sgRNA1_rna)
+regulate(tf_promoter, sgRNA1_dna)
 builders.constitutive(tf_cds)
 
 # Try the Cre

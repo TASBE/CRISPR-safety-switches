@@ -25,7 +25,7 @@ class TestSimulation(unittest.TestCase):
         system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Basic Kill Switch")
         doc.add(system)
         aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
-        sgRNA1_dna, genome, sgRNA1_rna = builders.make_crispr_module(aav)
+        sgRNA1_dna, genome = builders.make_crispr_module(aav)
         builders.constitutive(sgRNA1_dna)
         # TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
         interface = sbol3.Interface(input=[aav, genome], output=[aav])

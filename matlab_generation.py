@@ -92,9 +92,11 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
             return None  # templates don't get equations
         elif role == sbol3.SBO_PRODUCT:
             species = variables[feature]
-            modulation = '*'.join(regulation_term(r) for r in regulation)
+            template = in_role(interaction,sbol3.SBO_TEMPLATE)
+            # modulation is the regulation of either the template or the product
+            modulation = ''.join(regulation_term(r) for r in regulation[feature] + regulation[template])
             # context is the constraints of the template
-            context = '*'.join(variables[ct] for ct in containers[in_role(interaction,sbol3.SBO_TEMPLATE)])
+            context = ''.join(variables[ct] for ct in containers[template])
             if f_type == sbol3.SBO_RNA:
                 prod_rate = parameters[f'alpha_r_{species}']
                 deg_rate = parameters[f'delta_g']
@@ -241,7 +243,7 @@ def make_matlab_model(system: sbol3.Component) -> Tuple[str,List[str]]:
                   for f in system.features}
     regulators = {f: [c.subject.lookup() for c in system.constraints if c.restriction == sbol3.SBOL_MEETS and c.object == f.identity]
                   for f in system.features}
-    regulation = {f: itertools.chain(*(interactions[r] for r in regulators[f])) for f in regulators}
+    regulation = {f: list(itertools.chain(*(interactions[r] for r in regulators[f]))) for f in regulators}
 
     # generate an ODE based on the roles in the interactions
     parameters = ParameterDictionary()  # dictionary of Interaction/string : parameter_name
@@ -249,7 +251,7 @@ def make_matlab_model(system: sbol3.Component) -> Tuple[str,List[str]]:
     derivatives = []
 
     for f in id_sort(system.features):
-        interaction_terms = [t for t in [interaction_to_term(f, i, regulation[f], containers, parameters, variables)
+        interaction_terms = [t for t in [interaction_to_term(f, i, regulation, containers, parameters, variables)
                                          for i in id_sort(interactions[f])] if t]
         # If there is at least one term, then add an equation
         if interaction_terms:
