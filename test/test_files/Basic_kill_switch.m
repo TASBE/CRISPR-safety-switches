@@ -1,8 +1,8 @@
 function [time_interval, y_out, y] = Basic_kill_switch(time_span, parameters, initial, step)
-% time_span is a vector [start, stop] of seconds
+% time_span is the hours values [start, stop]
 % parameters is a Map of names to numbers (e.g., rate constants, decay rates, Hill coefficients)
-% initial is the initial values for key variables
-% step is the number of seconds between samples in output; defaults to 1
+% initial is a Map of variable names to initial values
+% step is the number of hours between samples in output; defaults to 1
 % Returns vector of time, matrix of output levels at those time points, matrix of all species
     if nargin < 4, step = 1; end
     
@@ -12,8 +12,8 @@ function [time_interval, y_out, y] = Basic_kill_switch(time_span, parameters, in
 
     % Set initial values
     y0=zeros(1,10);
-    y0(AAV) = initial(1);
-	y0(genome) = initial(2);
+    y0(AAV) = initial('AAV');
+	y0(genome) = initial('genome');
     
     % Run ODE
     solution = ode45(@(t,x) diff_eq(t, x, parameters), time_span, y0);
@@ -28,10 +28,6 @@ end
 function dx=diff_eq(t, x, parameters)
     % Unpack parameters from parameter map
     Cas_degradation = parameters('Cas_degradation');
-	Cas_degradation = parameters('Cas_degradation');
-	Cas_degradation = parameters('Cas_degradation');
-	Cas_degradation = parameters('Cas_degradation');
-	Cas_gRNA_binding = parameters('Cas_gRNA_binding');
 	Cas_gRNA_binding = parameters('Cas_gRNA_binding');
 	alpha_p_Cas9 = parameters('alpha_p_Cas9');
 	alpha_r_sgRNA1 = parameters('alpha_r_sgRNA1');
@@ -54,15 +50,15 @@ function dx=diff_eq(t, x, parameters)
     
     % Compute derivative for each species
     d_AAV = - k_cat*AAV*Cas9_sgRNA1;
-	d_Cas9_sgRNA1 =  Cas_gRNA_binding*Cas9*sgRNA1 - k_cat*AAV*Cas9_sgRNA1 - Cas_degradation*Cas9_sgRNA1;
-	d_Cas9_sgRNA2 =  Cas_gRNA_binding*Cas9*sgRNA2 - k_cat*Cas9_sgRNA2*genome - Cas_degradation*Cas9_sgRNA2;
+	d_Cas9_sgRNA1 =  Cas_gRNA_binding*Cas9*sgRNA1 - Cas_degradation*Cas9_sgRNA1 - k_cat*AAV*Cas9_sgRNA1;
+	d_Cas9_sgRNA2 =  Cas_gRNA_binding*Cas9*sgRNA2 - Cas_degradation*Cas9_sgRNA2 - k_cat*Cas9_sgRNA2*genome;
 	d_genome = - k_cat*Cas9_sgRNA2*genome;
-	d_postedit_Cas9_sgRNA1 = - Cas_degradation*postedit_Cas9_sgRNA1 + k_cat*AAV*Cas9_sgRNA1;
-	d_postedit_Cas9_sgRNA2 = - Cas_degradation*postedit_Cas9_sgRNA2 + k_cat*Cas9_sgRNA2*genome;
+	d_postedit_Cas9_sgRNA1 =  k_cat*AAV*Cas9_sgRNA1 - Cas_degradation*postedit_Cas9_sgRNA1;
+	d_postedit_Cas9_sgRNA2 =  k_cat*Cas9_sgRNA2*genome - Cas_degradation*postedit_Cas9_sgRNA2;
 	d_edited_genome =  k_cat*Cas9_sgRNA2*genome;
-	d_Cas9 =  alpha_p_Cas9*AAV - delta_Cas9*Cas9 - Cas_gRNA_binding*Cas9*sgRNA1 - Cas_gRNA_binding*Cas9*sgRNA2;
-	d_sgRNA1 =  alpha_r_sgRNA1*AAV - delta_g*sgRNA1 - Cas_gRNA_binding*Cas9*sgRNA1;
-	d_sgRNA2 =  alpha_r_sgRNA2*AAV - delta_g*sgRNA2 - Cas_gRNA_binding*Cas9*sgRNA2;
+	d_Cas9 =  alpha_p_Cas9*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - Cas_gRNA_binding*Cas9*sgRNA2 - delta_Cas9*Cas9;
+	d_sgRNA1 =  alpha_r_sgRNA1*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - delta_g*sgRNA1;
+	d_sgRNA2 =  alpha_r_sgRNA2*AAV - Cas_gRNA_binding*Cas9*sgRNA2 - delta_g*sgRNA2;
     
     % Pack derivatives for return
     dx = [d_AAV, d_Cas9, d_Cas9_sgRNA1, d_Cas9_sgRNA2, d_edited_genome, d_genome, d_postedit_Cas9_sgRNA1, d_postedit_Cas9_sgRNA2, d_sgRNA1, d_sgRNA2]';

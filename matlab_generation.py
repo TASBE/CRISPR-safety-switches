@@ -206,7 +206,7 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction,
         logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
         return None
 
-
+# TODO: consider switch from ode45 to ode15s
 ode_template = '''function [time_interval, y_out, y] = {}(time_span, parameters, initial, step)
 % time_span is the hours values [start, stop]
 % parameters is a Map of names to numbers (e.g., rate constants, decay rates, Hill coefficients)
@@ -311,11 +311,10 @@ def make_matlab_model(system: sbol3.Component) -> Tuple[str, List[str]]:
         # If there is at least one term, then add an equation
         if interaction_terms:
             terms_added.add(f)
-            derivatives.append(f'{differential(f)} = {" ".join(interaction_terms).removeprefix("+")};')
+            derivatives.append(f'{differential(f)} = {" ".join(sorted(interaction_terms)).removeprefix("+")};')
 
     missing_terms = variables.keys() - terms_added
-    for f in missing_terms:
-        derivatives.append(f'{differential(f)} = 0;')
+    derivatives = [f'{differential(f)} = 0;' for f in missing_terms] + derivatives
 
     # TODO: add d_VAR = 0 equations for any variables that didn't get an interaction term
 

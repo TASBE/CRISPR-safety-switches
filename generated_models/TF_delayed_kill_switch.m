@@ -36,6 +36,7 @@ function dx=diff_eq(t, x, parameters)
 	alpha_r_sgRNA2 = parameters('alpha_r_sgRNA2');
 	delta_Cas9 = parameters('delta_Cas9');
 	delta_TF = parameters('delta_TF');
+	delta_g = parameters('delta_g');
 	k_cat = parameters('k_cat');
 	n = parameters('n');
     
@@ -54,16 +55,16 @@ function dx=diff_eq(t, x, parameters)
     
     % Compute derivative for each species
     d_AAV = - k_cat*AAV*Cas9_sgRNA1;
-	d_Cas9_sgRNA1 =  Cas_gRNA_binding*Cas9*sgRNA1 - k_cat*AAV*Cas9_sgRNA1 - Cas_degradation*Cas9_sgRNA1;
-	d_Cas9_sgRNA2 = - Cas_degradation*Cas9_sgRNA2 + Cas_gRNA_binding*Cas9*sgRNA2 - k_cat*Cas9_sgRNA2*genome;
+	d_Cas9_sgRNA1 =  Cas_gRNA_binding*Cas9*sgRNA1 - Cas_degradation*Cas9_sgRNA1 - k_cat*AAV*Cas9_sgRNA1;
+	d_Cas9_sgRNA2 =  Cas_gRNA_binding*Cas9*sgRNA2 - Cas_degradation*Cas9_sgRNA2 - k_cat*Cas9_sgRNA2*genome;
 	d_genome = - k_cat*Cas9_sgRNA2*genome;
-	d_postedit_Cas9_sgRNA1 = - Cas_degradation*postedit_Cas9_sgRNA1 + k_cat*AAV*Cas9_sgRNA1;
-	d_postedit_Cas9_sgRNA2 = - Cas_degradation*postedit_Cas9_sgRNA2 + k_cat*Cas9_sgRNA2*genome;
+	d_postedit_Cas9_sgRNA1 =  k_cat*AAV*Cas9_sgRNA1 - Cas_degradation*postedit_Cas9_sgRNA1;
+	d_postedit_Cas9_sgRNA2 =  k_cat*Cas9_sgRNA2*genome - Cas_degradation*postedit_Cas9_sgRNA2;
 	d_edited_genome =  k_cat*Cas9_sgRNA2*genome;
 	d_TF =  alpha_p_TF*AAV - delta_TF*TF;
-	d_Cas9 =  alpha_p_Cas9*AAV - delta_Cas9*Cas9 - Cas_gRNA_binding*Cas9*sgRNA1 - Cas_gRNA_binding*Cas9*sgRNA2;
-	d_sgRNA1 =  alpha_r_sgRNA1*(TF^n)/(K_A^n + TF^n)*AAV - Cas_gRNA_binding*Cas9*sgRNA1;
-	d_sgRNA2 =  alpha_r_sgRNA2*AAV - Cas_gRNA_binding*Cas9*sgRNA2;
+	d_Cas9 =  alpha_p_Cas9*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - Cas_gRNA_binding*Cas9*sgRNA2 - delta_Cas9*Cas9;
+	d_sgRNA1 =  alpha_r_sgRNA1*(TF^n)/(K_A^n + TF^n)*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - delta_g*sgRNA1;
+	d_sgRNA2 =  alpha_r_sgRNA2*AAV - Cas_gRNA_binding*Cas9*sgRNA2 - delta_g*sgRNA2;
     
     % Pack derivatives for return
     dx = [d_AAV, d_Cas9, d_Cas9_sgRNA1, d_Cas9_sgRNA2, d_TF, d_edited_genome, d_genome, d_postedit_Cas9_sgRNA1, d_postedit_Cas9_sgRNA2, d_sgRNA1, d_sgRNA2]';
