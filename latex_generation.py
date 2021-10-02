@@ -130,13 +130,11 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction,
             context = ''.join(maybe_concentration(ct) for ct in containers[template])
             if f_type == sbol3.SBO_RNA:
                 prod_rate = f'\\txRate{{{species}}}'
-                deg_rate = f'\\rnaDegradeRate{{}}'
             elif f_type == sbol3.SBO_PROTEIN:
                 prod_rate = f'\\txtlRate{{{species}}}'
-                deg_rate = f'\\proDegradeRate{{{species}}}'
             else:
                 raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {feature_participation[0]}')
-            return f'+ {prod_rate}{modulation}{context} - {deg_rate}{maybe_concentration(feature)}'
+            return f'+ {prod_rate}{modulation}{context}'
         else:
             logging.warning(f'Cannot serialize role in {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
     elif i_type == tyto.SBO.cleavage:
@@ -225,7 +223,7 @@ def make_latex_model(system: sbol3.Component) -> str:
         interaction_terms = [t for t in [interaction_to_term(f, i, regulation, containers) for i in id_sort(interactions[f])] if t]
         # If there is at least one term, then add an equation
         if interaction_terms:
-            equation_latex.append(f'{differential(f)} & = ' + ' '.join(interaction_terms).removeprefix('+'))
+            equation_latex.append(f'{differential(f)} & = ' + ' '.join(sorted(interaction_terms)).removeprefix('+'))
 
     ## Generate the actual document
     # write section header

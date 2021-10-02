@@ -135,13 +135,11 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction,
             context = ''.join(variables[ct] for ct in containers[template])
             if f_type == sbol3.SBO_RNA:
                 prod_rate = parameters[f'alpha_r_{species}']
-                #deg_rate = parameters[f'delta_g']
             elif f_type == sbol3.SBO_PROTEIN:
                 prod_rate = parameters[f'alpha_p_{species}']
-                #deg_rate = parameters[f'delta_{species}']
             else:
                 raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {feature_participation[0]}')
-            return f'+ {"*".join(filter(None, [prod_rate, modulation, context]))}'# - {deg_rate}*{species}'
+            return f'+ {"*".join(filter(None, [prod_rate, modulation, context]))}'
         else:
             logging.warning(f'Cannot serialize role in {interaction.identity}, type {tyto.SBO.get_term_by_uri(i_type)}')
     elif i_type == tyto.SBO.cleavage:

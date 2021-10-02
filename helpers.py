@@ -1,7 +1,6 @@
 import itertools
 
-import sbol3
-
+import workarounds
 
 def transitive_closure(d: dict) -> dict:
     """Interpreting a dictionary as an acyclic directed graph, create a transitive closure of all k->v edges

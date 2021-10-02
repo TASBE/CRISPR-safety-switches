@@ -39,6 +39,8 @@ def make_crispr_module(vector: sbol3.Feature) -> Tuple[sbol3.Feature, sbol3.Feat
     sgRNA2 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_RNA], name="sgRNA2"))
     add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {sgRNA1_dna: sbol3.SBO_TEMPLATE, sgRNA1: sbol3.SBO_PRODUCT})
     add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {sgRNA2_dna: sbol3.SBO_TEMPLATE, sgRNA2: sbol3.SBO_PRODUCT})
+    add_interaction(sbol3.SBO_DEGRADATION, name='gRNA degradation', participants={sgRNA1: sbol3.SBO_REACTANT})
+    add_interaction(sbol3.SBO_DEGRADATION, name='gRNA degradation', participants={sgRNA2: sbol3.SBO_REACTANT})
     Cas9_sgRNA1 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_NON_COVALENT_COMPLEX], name="Cas9-sgRNA1"))
     Cas9_sgRNA2 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_NON_COVALENT_COMPLEX], name="Cas9-sgRNA2"))
     add_interaction(sbol3.SBO_NON_COVALENT_BINDING, name='Cas-gRNA binding',
