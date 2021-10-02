@@ -3,33 +3,53 @@
 % Equations generated from http://bbn.com/crispr-kill-switch/Basic_kill_switch
 
 \begin{align}
-\diff{\vectorGen{}}{t} & = - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\ 
-\diff{\conc{\cplx{\cas}{1}}}{t} & =  \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}} - \casCompDegradeRate{}\conc{\cplx{\cas}{1}}\\ 
-\diff{\conc{\cplx{\cas}{2}}}{t} & =  \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}} - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{} - \casCompDegradeRate{}\conc{\cplx{\cas}{2}}\\ 
-\diff{\hostGen{}}{t} & = - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\ 
-\diff{\conc{\bound{\cplx{\cas}{1}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{1}}} + \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\ 
-\diff{\conc{\bound{\cplx{\cas}{2}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{2}}} + \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\ 
-\diff{\edited{\hostGen{}}}{t} & =  \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\ 
-\diff{\conc{\proSp{\cas{}}}}{t} & =  \txtlRate{\proSp{\cas{}}}\vectorGen{} - \proDegradeRate{\proSp{\cas{}}}\conc{\proSp{\cas{}}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}}\\ 
-\diff{\conc{\gRna{1}}}{t} & =  \txRate{\gRna{1}}\vectorGen{} - \rnaDegradeRate{}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}}\\ 
+\diff{\vectorGen{}}{t} & = - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\
+\diff{\conc{\cplx{\cas}{1}}}{t} & =  \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}} - \casCompDegradeRate{}\conc{\cplx{\cas}{1}}\\
+\diff{\conc{\cplx{\cas}{2}}}{t} & = - \casCompDegradeRate{}\conc{\cplx{\cas}{2}} + \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}} - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\hostGen{}}{t} & = - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\conc{\bound{\cplx{\cas}{1}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{1}}} + \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\
+\diff{\conc{\bound{\cplx{\cas}{2}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{2}}} + \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\edited{\hostGen{}}}{t} & =  \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\conc{\proSp{\cas{}}}}{t} & =  \txtlRate{\proSp{\cas{}}}\vectorGen{} - \proDegradeRate{\proSp{\cas{}}}\conc{\proSp{\cas{}}} - \proDegradeRate{\proSp{\cas{}}}\conc{\proSp{\cas{}}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}}\\
+\diff{\conc{\gRna{1}}}{t} & =  \txRate{\gRna{1}}\vectorGen{} - \rnaDegradeRate{}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}}\\
 \diff{\conc{\gRna{2}}}{t} & =  \txRate{\gRna{2}}\vectorGen{} - \rnaDegradeRate{}\conc{\gRna{2}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}}
 \end{align}
 
-\subsection{TF Kill Switch}
+\subsection{Cre-activated Kill Switch}
+\label{s:Cre_delayed_kill_switch}
+% Equations generated from http://bbn.com/crispr-kill-switch/Cre_delayed_kill_switch
+
+\begin{align}
+\diff{\vectorGen{}}{t} & = - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\
+\diff{\conc{\cplx{\cas}{1}}}{t} & =  \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}} - \casCompDegradeRate{}\conc{\cplx{\cas}{1}}\\
+\diff{\conc{\cplx{\cas}{2}}}{t} & = - \casCompDegradeRate{}\conc{\cplx{\cas}{2}} + \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}} - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\hostGen{}}{t} & = - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\conc{\bound{\cplx{\cas}{1}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{1}}} + \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\
+\diff{\conc{\bound{\cplx{\cas}{2}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{2}}} + \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\edited{\hostGen{}}}{t} & =  \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\conc{\proSp{\cre{}}}}{t} & =  \txtlRate{\proSp{\cre{}}}\vectorGen{} - \proDegradeRate{\proSp{\cre{}}}\conc{\proSp{\cre{}}} - \proDegradeRate{\proSp{\cre{}}}\conc{\proSp{\cre{}}}\\
+\diff{\vectorGen{}_C}{t} & = - \creCutRate{} \vectorGen{}_C \conc{\proSp{\cre{}}}^4 + \frac{\vectorGen{}_C}{\vectorGen{}} \diff{\vectorGen{}}{t}\\
+\diff{\edited{\vectorGen{}_C}}{t} & =  \creCutRate{} \vectorGen{}_C \conc{\proSp{\cre{}}}^4 + \frac{\edited{\vectorGen{}_C}}{\vectorGen{}} \diff{\vectorGen{}}{t}\\
+\diff{\conc{\proSp{\cas{}}}}{t} & =  \txtlRate{\proSp{\cas{}}}\vectorGen{} - \proDegradeRate{\proSp{\cas{}}}\conc{\proSp{\cas{}}} - \proDegradeRate{\proSp{\cas{}}}\conc{\proSp{\cas{}}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}}\\
+\diff{\conc{\gRna{1}}}{t} & =  \txRate{\gRna{1}}\frac{\edited{\vectorGen{}_C}}{\vectorGen{}}\vectorGen{} - \rnaDegradeRate{}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}}\\
+\diff{\conc{\gRna{2}}}{t} & =  \txRate{\gRna{2}}\vectorGen{} - \rnaDegradeRate{}\conc{\gRna{2}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}}
+\end{align}
+
+\subsection{Repressor on Kill Switch}
 \label{s:TF_delayed_kill_switch}
 % Equations generated from http://bbn.com/crispr-kill-switch/TF_delayed_kill_switch
 
 \begin{align}
-\diff{\vectorGen{}}{t} & = - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\ 
-\diff{\conc{\cplx{\cas}{1}}}{t} & =  \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}} - \casCompDegradeRate{}\conc{\cplx{\cas}{1}}\\ 
-\diff{\conc{\cplx{\cas}{2}}}{t} & =  \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}} - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{} - \casCompDegradeRate{}\conc{\cplx{\cas}{2}}\\ 
-\diff{\hostGen{}}{t} & = - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\ 
-\diff{\conc{\bound{\cplx{\cas}{1}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{1}}} + \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\ 
-\diff{\conc{\bound{\cplx{\cas}{2}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{2}}} + \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\ 
-\diff{\edited{\hostGen{}}}{t} & =  \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\ 
-\diff{\conc{\proSp{TF}}}{t} & =  \txtlRate{\proSp{TF}}\vectorGen{} - \proDegradeRate{\proSp{TF}}\conc{\proSp{TF}}\\ 
-\diff{\conc{\proSp{\cas{}}}}{t} & =  \txtlRate{\proSp{\cas{}}}\vectorGen{} - \proDegradeRate{\proSp{\cas{}}}\conc{\proSp{\cas{}}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}}\\ 
-\diff{\conc{\gRna{1}}}{t} & =  \txRate{\gRna{1}}\frac{[\proSp{TF}]^n}{(K_A)^n + [\proSp{TF}]^n}\vectorGen{} - \rnaDegradeRate{}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}}\\ 
+\diff{\vectorGen{}}{t} & = - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\
+\diff{\conc{\cplx{\cas}{1}}}{t} & =  \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}} - \casCompDegradeRate{}\conc{\cplx{\cas}{1}}\\
+\diff{\conc{\cplx{\cas}{2}}}{t} & = - \casCompDegradeRate{}\conc{\cplx{\cas}{2}} + \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}} - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\hostGen{}}{t} & = - \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\conc{\bound{\cplx{\cas}{1}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{1}}} + \casCutRate{{}}\vectorGen{}\conc{\cplx{\cas}{1}}\\
+\diff{\conc{\bound{\cplx{\cas}{2}}}}{t} & = - \casCompDegradeRate{}\conc{\bound{\cplx{\cas}{2}}} + \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\edited{\hostGen{}}}{t} & =  \casCutRate{{}}\conc{\cplx{\cas}{2}}\hostGen{}\\
+\diff{\conc{\proSp{TF}}}{t} & =  \txtlRate{\proSp{TF}}\vectorGen{} - \proDegradeRate{\proSp{TF}}\conc{\proSp{TF}} - \proDegradeRate{\proSp{TF}}\conc{\proSp{TF}}\\
+\diff{\conc{\proSp{\cas{}}}}{t} & =  \txtlRate{\proSp{\cas{}}}\vectorGen{} - \proDegradeRate{\proSp{\cas{}}}\conc{\proSp{\cas{}}} - \proDegradeRate{\proSp{\cas{}}}\conc{\proSp{\cas{}}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}}\\
+\diff{\conc{\gRna{1}}}{t} & =  \txRate{\gRna{1}}\frac{\conc{\proSp{TF}}^n}{(K_A)^n + \conc{\proSp{TF}}^n}\vectorGen{} - \rnaDegradeRate{}\conc{\gRna{1}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{1}}\\
 \diff{\conc{\gRna{2}}}{t} & =  \txRate{\gRna{2}}\vectorGen{} - \rnaDegradeRate{}\conc{\gRna{2}} - \gRnaBind{}\conc{\proSp{\cas{}}}\conc{\gRna{2}}
 \end{align}
 

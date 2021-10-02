@@ -9,6 +9,8 @@ from sbol_utilities.helper_functions import string_to_display_id
 from sbol_utilities.workarounds import id_sort
 from sbol_utilities.component import in_role, all_in_role
 
+from shared_global_names import RECOMBINATION
+
 
 class VariableDictionary(UserDict):
     """Collection of variables, as a wrapper around a dictionary that auto-adds names for missing keys"""
@@ -27,7 +29,7 @@ class ParameterDictionary(UserDict):
             if isinstance(key, str):
                 self.data[key] = string_to_display_id(key)
             else:
-                self.data[key] = matlab_name(key)  # TODO: Interactions are not Features; fix here or there
+                self.data[key] = matlab_name(key)  # TODO: in matlab_name, Interactions are not Features; fix here or there
         return self.data[key]
 
 
@@ -70,14 +72,22 @@ def regulation_term(interaction: sbol3.Interaction, parameters: ParameterDiction
         n = parameters['n']
         return f'({k}^{n})/({k}^{n} + {species}^{n})'
     elif i_type == sbol3.SBO_STIMULATION:
-        species = variables[in_role(interaction, sbol3.SBO_INHIBITOR)]
+        species = variables[in_role(interaction, sbol3.SBO_STIMULATOR)]
         # TODO: Consider replacing K and n with variables
         k = parameters['K_A']
         n = parameters['n']
         return f'({species}^{n})/({k}^{n} + {species}^{n})'
     # Make Cre equations
-    # elif i_type == cre_recombinase: # TODO: Implement Cre
-    #     pass
+    elif i_type == RECOMBINATION:
+        target = in_role(interaction, sbol3.SBO_MODIFIED)
+        if any(tyto.SO.promoter.is_ancestor_of(r) for r in target.roles):  # Cre-off
+            original = in_role(interaction, sbol3.SBO_REACTANT)
+            return f'({variables[original]}/AAV)' # TODO: replace AAV w. variable
+        elif any(tyto.SO.terminator.is_ancestor_of(r) for r in target.roles):  # Cre-on
+            recombined = in_role(interaction, sbol3.SBO_PRODUCT)
+            return f'({variables[recombined]}/AAV)' # TODO: replace AAV w. variable
+        else:
+            raise ValueError(f'Cannot give term for recombination on roles {target.roles} in {interaction.identity}')
     else:
         logging.warning(f'Cannot serialize regulation {interaction.identity}, type {tyto.SBO.get_term_by_uri(i_type)}')
         return ''
@@ -125,13 +135,13 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction,
             context = ''.join(variables[ct] for ct in containers[template])
             if f_type == sbol3.SBO_RNA:
                 prod_rate = parameters[f'alpha_r_{species}']
-                deg_rate = parameters[f'delta_g']
+                #deg_rate = parameters[f'delta_g']
             elif f_type == sbol3.SBO_PROTEIN:
                 prod_rate = parameters[f'alpha_p_{species}']
-                deg_rate = parameters[f'delta_{species}']
+                #deg_rate = parameters[f'delta_{species}']
             else:
                 raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {feature_participation[0]}')
-            return f'+ {"*".join(filter(None, [prod_rate, modulation, context]))} - {deg_rate}*{species}'
+            return f'+ {"*".join(filter(None, [prod_rate, modulation, context]))}'# - {deg_rate}*{species}'
         else:
             logging.warning(f'Cannot serialize role in {interaction.identity}, type {tyto.SBO.get_term_by_uri(i_type)}')
     elif i_type == tyto.SBO.cleavage:
@@ -173,16 +183,37 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction,
         else:
             raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {interaction.identity}')
         return f'{sign} {rate}*' + '*'.join(reactants)
+    elif i_type == sbol3.SBO_INHIBITION or i_type == sbol3.SBO_STIMULATION:
+        # Pass for the regulation interactions that are taken care of in the other function, so you don't get a warning
+        pass
+    elif i_type == RECOMBINATION:
+        if role == sbol3.SBO_MODIFIER or role == sbol3.SBO_MODIFIED:
+            return None  # no effect on Cre concentration, not modeling excised element
+        reactant = in_role(interaction, sbol3.SBO_REACTANT)
+        recombinase = variables[in_role(interaction, sbol3.SBO_MODIFIER)]
+        ct = containers[reactant]
+        if len(ct) != 1:
+            raise ValueError(f'Recombination expected 1 context, got {len(ct)} in {interaction.identity}')
+        context = ct[0]
+        rate = parameters['k_cre'] # TODO: move this into actual parameters rather than name
+        if role == sbol3.SBO_REACTANT:
+            sign = '-'
+        elif role == sbol3.SBO_PRODUCT:
+            sign = '+'
+        else:
+            raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {interaction.identity}')
+        return f'{sign} {rate}*{variables[reactant]}*{recombinase}^4 + ' \
+               f'({variables[feature]}/{variables[context]})*{differential(context)}'
     else:
         logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
         return None
 
 
 ode_template = '''function [time_interval, y_out, y] = {}(time_span, parameters, initial, step)
-% time_span is a vector [start, stop] of seconds
+% time_span is the hours values [start, stop]
 % parameters is a Map of names to numbers (e.g., rate constants, decay rates, Hill coefficients)
-% initial is the initial values for key variables
-% step is the number of seconds between samples in output; defaults to 1
+% initial is a Map of variable names to initial values
+% step is the number of hours between samples in output; defaults to 1
 % Returns vector of time, matrix of output levels at those time points, matrix of all species
     if nargin < 4, step = 1; end
     
@@ -248,8 +279,8 @@ def format_model(name: str, parameters: List[str], variables: List[str], inputs:
     parameter_names = "\n\t".join(f'{p} = parameters(\'{p}\');' for p in parameters)
     io_variable_names = "\n\t".join(f'{v} = {i};' for v, i in zip(variables, range(1, len(variables) + 1))
                                     if v in (set(inputs) | set(outputs)))
-    initializations = "\n\t".join(f'y0({v}) = initial({i});' for v, i in zip(inputs, range(1, len(inputs) + 1)))
-    unpack_variables = "\n\t".join(f'{v} = x({i});' for v, i in zip(variables, range(1, len(parameters) + 1)))
+    initializations = "\n\t".join(f'y0({v}) = initial(\'{v}\');' for v in inputs)
+    unpack_variables = "\n\t".join(f'{v} = x({i});' for v, i in zip(variables, range(1, len(variables) + 1)))
     pack_derivatives = ", ".join(f'{differential(v)}' for v in variables)
     return ode_template.format(name, io_variable_names, len(variables), initializations, ", ".join(outputs),
                                parameter_names, unpack_variables, "\n\t".join(derivatives), pack_derivatives)
@@ -282,8 +313,7 @@ def make_matlab_model(system: sbol3.Component) -> Tuple[str, List[str]]:
         # If there is at least one term, then add an equation
         if interaction_terms:
             terms_added.add(f)
-            diff_term = differential(f)
-            derivatives.append(f'{diff_term} = {" ".join(interaction_terms).removeprefix("+")};')
+            derivatives.append(f'{differential(f)} = {" ".join(interaction_terms).removeprefix("+")};')
 
     missing_terms = variables.keys() - terms_added
     for f in missing_terms:
@@ -294,8 +324,8 @@ def make_matlab_model(system: sbol3.Component) -> Tuple[str, List[str]]:
     # Generate the actual document
     # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
     # TODO: input/ouput will change to plural after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-    parameter_names = sorted(list(parameters.values()))
-    variable_names = sorted(list(variables.values()))
+    parameter_names = sorted(set(parameters.values()))
+    variable_names = sorted(variables.values())
     inputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.input)])
     outputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.output)])
     model = format_model(system.display_id, parameter_names, variable_names, inputs, outputs, derivatives)
