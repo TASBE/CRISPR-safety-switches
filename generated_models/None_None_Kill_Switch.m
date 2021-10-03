@@ -1,4 +1,4 @@
-function [time_interval, y_out, y] = Basic_kill_switch(time_span, parameters, initial, step)
+function [time_interval, y_out, y] = None_None_Kill_Switch(time_span, parameters, initial, step)
 % time_span is the hours values [start, stop]
 % parameters is a Map of names to numbers (e.g., rate constants, decay rates, Hill coefficients)
 % initial is a Map of variable names to initial values

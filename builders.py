@@ -6,7 +6,9 @@ import tyto
 ###########################
 # Modules:
 from sbol_utilities.workarounds import get_toplevel
-from sbol_utilities.component import constitutive, contains, add_feature, add_interaction
+from sbol_utilities.component import constitutive, contains, add_feature, add_interaction, order
+
+from shared_global_names import RECOMBINATION
 
 
 def make_crispr_module(vector: sbol3.Feature) -> Tuple[sbol3.Feature, sbol3.Feature]:
@@ -25,6 +27,7 @@ def make_crispr_module(vector: sbol3.Feature) -> Tuple[sbol3.Feature, sbol3.Feat
     constitutive(cas9_cds)
     cas9 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_PROTEIN], name="Cas9"))
     add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {cas9_cds: sbol3.SBO_TEMPLATE, cas9: sbol3.SBO_PRODUCT})
+    add_interaction(sbol3.SBO_DEGRADATION, name='Cas degradation', participants={cas9: sbol3.SBO_REACTANT})
 
     # Add the sgRNA coding regions
     sgRNA1_dna = contains(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.sgRNA], name="sgRNA1-coding"))
@@ -36,6 +39,8 @@ def make_crispr_module(vector: sbol3.Feature) -> Tuple[sbol3.Feature, sbol3.Feat
     sgRNA2 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_RNA], name="sgRNA2"))
     add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {sgRNA1_dna: sbol3.SBO_TEMPLATE, sgRNA1: sbol3.SBO_PRODUCT})
     add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {sgRNA2_dna: sbol3.SBO_TEMPLATE, sgRNA2: sbol3.SBO_PRODUCT})
+    add_interaction(sbol3.SBO_DEGRADATION, name='gRNA degradation', participants={sgRNA1: sbol3.SBO_REACTANT})
+    add_interaction(sbol3.SBO_DEGRADATION, name='gRNA degradation', participants={sgRNA2: sbol3.SBO_REACTANT})
     Cas9_sgRNA1 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_NON_COVALENT_COMPLEX], name="Cas9-sgRNA1"))
     Cas9_sgRNA2 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_NON_COVALENT_COMPLEX], name="Cas9-sgRNA2"))
     add_interaction(sbol3.SBO_NON_COVALENT_BINDING, name='Cas-gRNA binding',
@@ -80,6 +85,7 @@ def make_tf_module(vector: sbol3.Feature, repressor: bool) -> Tuple[sbol3.Featur
     tf_cds = contains(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.CDS], name="TF-coding"))
     tf = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_PROTEIN], name="TF"))
     add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {tf_cds: sbol3.SBO_TEMPLATE, tf: sbol3.SBO_PRODUCT})
+    add_interaction(sbol3.SBO_DEGRADATION, name='TF degradation', participants={tf: sbol3.SBO_REACTANT})
 
     # Make the promoter that is regulated by the TF and add its regulation
     promoter = contains(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.promoter]))
@@ -94,5 +100,45 @@ def make_tf_module(vector: sbol3.Feature, repressor: bool) -> Tuple[sbol3.Featur
     return tf_cds, promoter
 
 
-def make_recombinase_module(system: sbol3.Component):
-    pass  # TODO: implement
+def make_recombinase_module(vector: sbol3.Feature, cre_on: bool) -> Tuple[sbol3.Feature, sbol3.Feature]:
+    """Add a Cre-recombinase regulation module to the system
+
+    :param vector: Vector into which the coding materials for the Cre module will be added
+    :param cre_on: true if Cre activates expression, false if Cre shuts off expression
+    :returns: tuple of CDS and regulatory features, for connecting to regulation
+    """
+
+    # find system containing the vector
+    system = get_toplevel(vector)
+    if not isinstance(system, sbol3.Component):
+        raise ValueError(f'System should be a component but was not: {system}')
+
+    # Add the cds of the TF, the TF, and the production relation between them
+    cre_cds = contains(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.CDS], name="Cre-coding"))
+    cre = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_PROTEIN], name="Cre"))
+    add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {cre_cds: sbol3.SBO_TEMPLATE, cre: sbol3.SBO_PRODUCT})
+    add_interaction(sbol3.SBO_DEGRADATION, name='Cre degradation', participants={cre: sbol3.SBO_REACTANT})
+
+    # Make the promoter region that is regulated by the TF and add its regulation
+    cre_region = contains(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.engineered_region], name='Cre regulated region'))
+    edited_cre_region = contains(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.engineered_region], name='edited Cre regulated region'))
+    promoter = contains(cre_region, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.promoter], name='Cre region promoter'))
+    cre_target1 = contains(cre_region, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.binding_site], name='Cre 5\' target'))
+    cre_target2 = contains(cre_region, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.binding_site], name='Cre 3\' target'))
+    if cre_on:  # wrap the targets around a terminator for Cre to turn off expression
+        terminator = contains(cre_region, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[sbol3.SO_TERMINATOR], name='Cre-targeted terminator'))
+        order(promoter, cre_target1)
+        order(cre_target1, terminator)
+        order(terminator, cre_target2)
+        add_interaction(RECOMBINATION, name='Cre recombination',
+                        participants={cre: sbol3.SBO_MODIFIER, cre_region: sbol3.SBO_REACTANT,
+                                      terminator: sbol3.SBO_MODIFIED, edited_cre_region: sbol3.SBO_PRODUCT})
+    else:  # wrap the targets around the promoter for Cre to turn off expression
+        order(cre_target1, promoter)
+        order(promoter, cre_target2)
+        add_interaction(RECOMBINATION, name='Cre recombination',
+                        participants={cre: sbol3.SBO_MODIFIER, cre_region: sbol3.SBO_REACTANT,
+                                      promoter: sbol3.SBO_MODIFIED, edited_cre_region: sbol3.SBO_PRODUCT})
+
+    # Return the cds and the promoter
+    return cre_cds, cre_region
