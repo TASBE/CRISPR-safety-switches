@@ -1,17 +1,19 @@
+from typing import Tuple
+
 import sbol3
 import tyto
 
 ###########################
 # Modules:
 from sbol_utilities.workarounds import get_toplevel
-from sbol_utilities.component import constitutive, contains, regulate, add_feature, add_interaction
+from sbol_utilities.component import constitutive, contains, add_feature, add_interaction
 
 
-def make_crispr_module(vector: sbol3.Feature) -> tuple[sbol3.Feature, sbol3.Feature]:
+def make_crispr_module(vector: sbol3.Feature) -> Tuple[sbol3.Feature, sbol3.Feature]:
     """Add a CRISPR module to the system, comprising both genome editing and kill switch
 
     :param vector: Vector into which the coding materials for the CRISPR module will be added
-    :return: tuple of sgRNA1 and sgRNA2 ncRNA regions, for attaching regulation to
+    :return: tuple of sgRNA1 ncRNA, genome for attaching regulation to
     """
     # find system containing the vector
     system = get_toplevel(vector)
@@ -57,46 +59,40 @@ def make_crispr_module(vector: sbol3.Feature) -> tuple[sbol3.Feature, sbol3.Feat
     add_interaction(sbol3.SBO_DEGRADATION, name='Cas degradation', participants={ex_Cas9_1: sbol3.SBO_REACTANT})
     add_interaction(sbol3.SBO_DEGRADATION, name='Cas degradation', participants={ex_Cas9_2: sbol3.SBO_REACTANT})
 
-    # Return the gRNA coding regions for use in establishing regulation
+    # Return the kill-switch gRNA coding region for use in establishing regulation, genome for output
     return sgRNA1_dna, genome
 
 
-def make_tf_module(system: sbol3.Component, vector: sbol3.Feature, target: sbol3.Feature, repressor: bool):
-    """Add a transcription factor module to the system
+def make_tf_module(vector: sbol3.Feature, repressor: bool) -> Tuple[sbol3.Feature, sbol3.Feature]:
+    """Add a transcription factor regulation module to the system
 
-    :param system: ???
-    :param vector: the AAV genome that this all goes in?
-    :param target: thing that is controlled by the TF
-    :param repressor: True or false, is this TF a repressor or not
+    :param vector: Vector into which the coding materials for the TF module will be added
+    :param repressor: true for repressor, false for activator
+    :returns: tuple of CDS and promoter features, for connecting to regulation
     """
 
-    # I am handed the system
+    # find system containing the vector
+    system = get_toplevel(vector)
+    if not isinstance(system, sbol3.Component):
+        raise ValueError(f'System should be a component but was not: {system}')
 
-    # Figure out what the vector is
-    # TODO: What is the vector that the cds goes into?
-    # Hand myself the AAV vector
-
-    # Add constitutive expression of the TF # TODO: Make it not just constitutive
+    # Add the cds of the TF, the TF, and the production relation between them
     tf_cds = contains(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.CDS], name="TF-coding"))
-    constitutive(tf_cds)
     tf = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_PROTEIN], name="TF"))
     add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {tf_cds: sbol3.SBO_TEMPLATE, tf: sbol3.SBO_PRODUCT})
 
-    # Make the other promoter
+    # Make the promoter that is regulated by the TF and add its regulation
     promoter = contains(vector, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[tyto.SO.promoter]))
-    regulate(promoter, target)
+    if repressor:
+        add_interaction(sbol3.SBO_INHIBITION, name='TF Repression',
+                        participants={tf: sbol3.SBO_INHIBITOR, promoter: sbol3.SBO_INHIBITED})
+    else:
+        add_interaction(sbol3.SBO_STIMULATION, name='TF Activation',
+                        participants={tf: sbol3.SBO_STIMULATOR, promoter: sbol3.SBO_STIMULATED})
 
-    # Add interactions
-    # TF activation # TODO: Add if statement to make a repressor option
-    add_interaction(sbol3.SBO_CONTROL, name='TF Activation',
-                    participants={tf: sbol3.SBO_REACTANT, promoter: sbol3.SBO_REACTANT})
-    # TF degradation
-    add_interaction(sbol3.SBO_DEGRADATION, name='TF degradation', participants={tf: sbol3.SBO_REACTANT})
-
-    # Not sure what I am returning
-    return promoter
+    # Return the cds and the promoter
+    return tf_cds, promoter
 
 
 def make_recombinase_module(system: sbol3.Component):
     pass  # TODO: implement
-

@@ -9,6 +9,7 @@ from sbol_utilities.helper_functions import string_to_display_id
 from sbol_utilities.workarounds import id_sort
 from sbol_utilities.component import in_role, all_in_role
 
+
 class VariableDictionary(UserDict):
     """Collection of variables, as a wrapper around a dictionary that auto-adds names for missing keys"""
 
@@ -42,7 +43,7 @@ def matlab_name(feature: sbol3.Feature) -> str:
 def differential(variable: Union[sbol3.Feature, str]) -> str:
     """Return the "dX/dt" variable of the ODE
 
-    :param feature: feature to get a differential for
+    :param variable: feature to get a differential for
     :return: Matlab string
     """
     if isinstance(variable, sbol3.Feature):
@@ -50,23 +51,47 @@ def differential(variable: Union[sbol3.Feature, str]) -> str:
     return f'd_{variable}'
 
 
-def regulation_term(interaction: sbol3.Interaction) -> str:
+def regulation_term(interaction: sbol3.Interaction, parameters: ParameterDictionary,
+                    variables: VariableDictionary) -> str:
     """Generate a term for regulation by transcription factor or recombinase
 
     :param interaction: Regulation interaction to serialize
+    :param parameters: Known parameters for system
+    :param variables: Known variables for system
     :return: Matlab equation term
     """
-    return ''  # TODO: implement regulation terms
+    # Need i_type to see what type of regulation is happening
+    i_type = interaction.types[0]
+    # Make TF Equations
+    if i_type == sbol3.SBO_INHIBITION:
+        species = variables[in_role(interaction, sbol3.SBO_INHIBITOR)]
+        # TODO: Consider replacing K and n with variables
+        k = parameters['K_R']
+        n = parameters['n']
+        return f'({k}^{n})/({k}^{n} + {species}^{n})'
+    elif i_type == sbol3.SBO_STIMULATION:
+        species = variables[in_role(interaction, sbol3.SBO_INHIBITOR)]
+        # TODO: Consider replacing K and n with variables
+        k = parameters['K_A']
+        n = parameters['n']
+        return f'({species}^{n})/({k}^{n} + {species}^{n})'
+    # Make Cre equations
+    # elif i_type == cre_recombinase: # TODO: Implement Cre
+    #     pass
+    else:
+        logging.warning(f'Cannot serialize regulation {interaction.identity}, type {tyto.SBO.get_term_by_uri(i_type)}')
+        return ''
 
 
-def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, regulation: List[sbol3.Interaction],
+def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction,
+                        regulation: Dict[sbol3.Feature, List[sbol3.Interaction]],
                         containers: Dict[sbol3.Feature, List[sbol3.Feature]], parameters: ParameterDictionary,
                         variables: VariableDictionary) -> Optional[str]:
     """Generate an equation term for a given interaction, with respect to the included feature
 
     :param feature: Target of the term
     :param interaction: Interaction to get an equation for
-    :param regulation: List of regulation interactions modulating the feature
+    :param regulation: Dictionary of regulation interactions in system
     :param containers: Dictionary of container relationships in system
     :param parameters: Known parameters for system
     :param variables: Known variables for system
@@ -92,9 +117,12 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
             return None  # templates don't get equations
         elif role == sbol3.SBO_PRODUCT:
             species = variables[feature]
-            modulation = '*'.join(regulation_term(r) for r in regulation)
+            template = in_role(interaction, sbol3.SBO_TEMPLATE)
+            # modulation is the regulation of either the template or the product
+            modulation = ''.join(regulation_term(r, parameters, variables)
+                                 for r in regulation[feature] + regulation[template])
             # context is the constraints of the template
-            context = '*'.join(variables[ct] for ct in containers[in_role(interaction,sbol3.SBO_TEMPLATE)])
+            context = ''.join(variables[ct] for ct in containers[template])
             if f_type == sbol3.SBO_RNA:
                 prod_rate = parameters[f'alpha_r_{species}']
                 deg_rate = parameters[f'delta_g']
@@ -105,7 +133,7 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
                 raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {feature_participation[0]}')
             return f'+ {"*".join(filter(None, [prod_rate, modulation, context]))} - {deg_rate}*{species}'
         else:
-            logging.warning(f'Cannot serialize role in {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
+            logging.warning(f'Cannot serialize role in {interaction.identity}, type {tyto.SBO.get_term_by_uri(i_type)}')
     elif i_type == tyto.SBO.cleavage:
         if interaction.name == 'Cas cleavage':
             reactants = [variables[f] for f in all_in_role(interaction, sbol3.SBO_REACTANT)]
@@ -150,8 +178,7 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
         return None
 
 
-ode_template = '''
-function [time_interval, y_out, y] = {}(time_span, parameters, initial, step)
+ode_template = '''function [time_interval, y_out, y] = {}(time_span, parameters, initial, step)
 % time_span is a vector [start, stop] of seconds
 % parameters is a Map of names to numbers (e.g., rate constants, decay rates, Hill coefficients)
 % initial is the initial values for key variables
@@ -228,7 +255,7 @@ def format_model(name: str, parameters: List[str], variables: List[str], inputs:
                                parameter_names, unpack_variables, "\n\t".join(derivatives), pack_derivatives)
 
 
-def make_matlab_model(system: sbol3.Component) -> Tuple[str,List[str]]:
+def make_matlab_model(system: sbol3.Component) -> Tuple[str, List[str]]:
     """Generate a set of LaTeX equations for the identified system:
 
     :param system: system for which a model is to be generated
@@ -241,20 +268,28 @@ def make_matlab_model(system: sbol3.Component) -> Tuple[str,List[str]]:
                   for f in system.features}
     regulators = {f: [c.subject.lookup() for c in system.constraints if c.restriction == sbol3.SBOL_MEETS and c.object == f.identity]
                   for f in system.features}
-    regulation = {f: itertools.chain(*(interactions[r] for r in regulators[f])) for f in regulators}
+    regulation = {f: list(itertools.chain(*(interactions[r] for r in regulators[f]))) for f in regulators}
 
     # generate an ODE based on the roles in the interactions
     parameters = ParameterDictionary()  # dictionary of Interaction/string : parameter_name
     variables = VariableDictionary()  # dictionary of Feature: variable_name
     derivatives = []
 
+    terms_added = set()
     for f in id_sort(system.features):
-        interaction_terms = [t for t in [interaction_to_term(f, i, regulation[f], containers, parameters, variables)
+        interaction_terms = [t for t in [interaction_to_term(f, i, regulation, containers, parameters, variables)
                                          for i in id_sort(interactions[f])] if t]
         # If there is at least one term, then add an equation
         if interaction_terms:
+            terms_added.add(f)
             diff_term = differential(f)
             derivatives.append(f'{diff_term} = {" ".join(interaction_terms).removeprefix("+")};')
+
+    missing_terms = variables.keys() - terms_added
+    for f in missing_terms:
+        derivatives.append(f'{differential(f)} = 0;')
+
+    # TODO: add d_VAR = 0 equations for any variables that didn't get an interaction term
 
     # Generate the actual document
     # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316

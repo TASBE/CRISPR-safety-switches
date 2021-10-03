@@ -1,12 +1,19 @@
 import sbol3
 import builders
-from sbol_utilities.component import add_feature
+from sbol_utilities.component import add_feature, regulate
 from shared_global_names import *
 
 ###########################
 # Actually make the model
 doc = sbol3.Document()
 sbol3.set_namespace(PROJECT_NAMESPACE)
+
+# CRISPR only
+# system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Basic Kill Switch")
+# doc.add(system)
+# aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
+# sgRNA1_dna, sgRNA1_rna = builders.make_crispr_module(aav)
+# builders.constitutive(sgRNA1_dna)
 
 system = sbol3.Component('Basic_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Basic Kill Switch")
 doc.add(system)
@@ -21,10 +28,13 @@ interface = sbol3.Interface(input=[aav, genome], output=[aav])
 system.interfaces = interface
 
 # Try the TF
-# system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="TF Kill Switch")
-# doc.add(system)
-# sgRNA1_dna = make_crispr_module(aav)
-# make_tf_module(system, aav, sgRNA1_dna, False)
+system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Repressor on Kill Switch")
+doc.add(system)
+aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
+sgRNA1_dna, genome = builders.make_crispr_module(aav)
+tf_cds, tf_promoter = builders.make_tf_module(aav, False)
+regulate(tf_promoter, sgRNA1_dna)
+builders.constitutive(tf_cds)
 
 # Try the Cre
 # system = sbol3.Component('Cre_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Cre recombinase Kill Switch")

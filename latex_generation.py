@@ -21,7 +21,8 @@ name_to_symbol = {
     'AAV': '\\vectorGen{}',
     'Cas-gRNA binding': '\\gRnaBind{}',
     'Cas degradation': '\\casCompDegradeRate{}',
-    'Cas cleavage': '\\casCutRate{}'
+    'Cas cleavage': '\\casCutRate{}',
+    'TF': '\\proSp{TF}'
 }
 """Dictionary mapping from SBOL names to LaTeX symbols in our convention"""
 
@@ -56,16 +57,33 @@ def regulation_term(interaction: sbol3.Interaction) -> str:
     :param interaction: Regulation interaction to serialize
     :return: LaTeX serialization
     """
-    return ''  # TODO: implement regulation terms
+    # Need i_type to see what type of regulation is happening
+    i_type = interaction.types[0]
+    # Make TF Equations
+    if i_type == sbol3.SBO_INHIBITION:
+        regulator = in_role(interaction, sbol3.SBO_INHIBITOR)
+        # TODO: Replace K and n with variables
+        return f'\\frac{{(K_R)^n}}{{(K_R)^n + {maybe_concentration(regulator)}^n}}'
+    elif i_type == sbol3.SBO_STIMULATION:
+        regulator = in_role(interaction, sbol3.SBO_STIMULATOR)
+        # TODO: Replace K and n with variables
+        return f'\\frac{{{maybe_concentration(regulator)}^n}}{{(K_A)^n + {maybe_concentration(regulator)}^n}}'
+    # Make Cre equations
+    # elif i_type == cre_recombinase: # TODO: Implement Cre
+    #     pass
+    else:
+        logging.warning(f'Cannot serialize regulation {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
+        return ''
 
 
-def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, regulation: List[sbol3.Interaction],
-                        containers: Dict[sbol3.Feature,List[sbol3.Feature]]) -> Optional[str]:
+def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction,
+                        regulation: Dict[sbol3.Feature, List[sbol3.Interaction]],
+                        containers: Dict[sbol3.Feature, List[sbol3.Feature]]) -> Optional[str]:
     """Generate an equation term for a given interaction, with respect to the included feature
 
     :param feature: Target of the term
     :param interaction: Interaction to get an equation for
-    :param regulation: List of regulation interactions modulating the feature
+    :param regulation: Dictionary of regulation interactions in the system
     :param containers: Dictionary of container relationships in system
     :return: LaTeX equation term
     """
@@ -85,12 +103,14 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
     # serialized based on interaction type and role
     if i_type == sbol3.SBO_GENETIC_PRODUCTION:
         if role == sbol3.SBO_TEMPLATE:
-            return None  # templates don't get equations
+            return None  # templates don't get equations - they are taken as regulator for products
         elif role == sbol3.SBO_PRODUCT:
             species = name_to_symbol[feature.name]
-            modulation = ''.join(regulation_term(r) for r in regulation)
+            template = in_role(interaction,sbol3.SBO_TEMPLATE)
+            # modulation is the regulation of either the template or the product
+            modulation = ''.join(regulation_term(r) for r in regulation[feature] + regulation[template])
             # context is the constraints of the template
-            context = ''.join(maybe_concentration(ct) for ct in containers[in_role(interaction,sbol3.SBO_TEMPLATE)])
+            context = ''.join(maybe_concentration(ct) for ct in containers[template])
             if f_type == sbol3.SBO_RNA:
                 prod_rate = f'\\txRate{{{species}}}'
                 deg_rate = f'\\rnaDegradeRate{{}}'
@@ -139,6 +159,9 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction, 
         else:
             raise ValueError(f'Cannot handle type {tyto.SBO.get_term_by_uri(f_type)} in {interaction.identity}')
         return f'{sign} {rate}' + ''.join(reactants)
+    elif i_type == sbol3.SBO_INHIBITION or i_type == sbol3.SBO_STIMULATION:
+        # Pass for the regulation interactions that are taken care of in the other function, so you don't get a warning
+        pass
     else:
         logging.warning(f'Cannot serialize interaction {interaction.identity} of type {tyto.SBO.get_term_by_uri(i_type)}')
         return None
@@ -158,12 +181,12 @@ def make_latex_model(system: sbol3.Component) -> str:
                   for f in system.features}
     regulators = {f: [c.subject.lookup() for c in system.constraints if c.restriction == sbol3.SBOL_MEETS and c.object == f.identity]
                   for f in system.features}
-    regulation = {f: itertools.chain(*(interactions[r] for r in regulators[f])) for f in regulators}
+    regulation = {f: list(itertools.chain(*(interactions[r] for r in regulators[f]))) for f in regulators}
 
     # generate an ODE based on the roles in the interactions
     equation_latex = []
     for f in id_sort(system.features):
-        interaction_terms = [t for t in [interaction_to_term(f, i, regulation[f], containers) for i in id_sort(interactions[f])] if t]
+        interaction_terms = [t for t in [interaction_to_term(f, i, regulation, containers) for i in id_sort(interactions[f])] if t]
         # If there is at least one term, then add an equation
         if interaction_terms:
             diff_term = differential(f)
@@ -177,7 +200,7 @@ def make_latex_model(system: sbol3.Component) -> str:
         latex += f'{system.description}\n\n'
     # write equations
     latex += f'\\begin{{align}}\n'
-    latex += '\\\\ \n'.join(equation_latex)
+    latex += '\\\\\n'.join(equation_latex)
     latex += f'\n\\end{{align}}\n\n'
 
     return latex
