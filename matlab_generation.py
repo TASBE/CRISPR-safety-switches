@@ -129,7 +129,7 @@ def interaction_to_term(feature: sbol3.Feature, interaction: sbol3.Interaction,
             species = variables[feature]
             template = in_role(interaction, sbol3.SBO_TEMPLATE)
             # modulation is the regulation of either the template or the product
-            modulation = ''.join(regulation_term(r, parameters, variables)
+            modulation = '*'.join(regulation_term(r, parameters, variables)
                                  for r in regulation[feature] + regulation[template])
             # context is the constraints of the template
             context = ''.join(variables[ct] for ct in containers[template])
