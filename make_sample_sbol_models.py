@@ -96,4 +96,4 @@ system.interfaces = sbol3.Interface(input=[aav, genome, cre_region], output=[aav
 # Of these we expect half to be viable options, with the other half speeding instead of slowing
 
 # Write the model file
-doc.write(MODEL_FILE, sbol3.SORTED_NTRIPLES)
+doc.write(SAMPLER_FILE, sbol3.SORTED_NTRIPLES)
