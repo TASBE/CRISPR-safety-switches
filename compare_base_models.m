@@ -1,24 +1,28 @@
 addpath('generated_models')
 
 parameters = containers.Map();
+% Therapy parameters - cannot be modified
 parameters('Cas_degradation') = 0.01;
 parameters('Cas_gRNA_binding') = 1;
-parameters('alpha_r_sgRNA1') = 0.1;
 parameters('alpha_r_sgRNA2') = 0.1;
+parameters('alpha_p_Cas9') = 0.1;
+parameters('delta_Cas9') = 0.1;
 parameters('delta_g') = 0.2;
 parameters('k_cat') = 0.1;
 
-parameters('K_A') = 10;
-parameters('K_R') = 1;
-parameters('alpha_p_Cas9') = 0.1;
-parameters('alpha_p_TF') = 0.1;
-parameters('delta_Cas9') = 0.1;
-parameters('delta_TF') = 1;
-parameters('n') = 2;
+% Base kill switch parameters
+parameters('alpha_r_sgRNA1') = parameters('alpha_r_sgRNA2'); % assume not readily modified 
 
-parameters('k_cre') = 0.001;
-parameters('alpha_p_Cre') = 0.01;
-parameters('delta_Cre') = 0.1;
+% Delay mechanism parameters
+parameters('alpha_p_TF') = 0.01; % Can be modulated - explore values
+parameters('delta_TF') = parameters('alpha_p_Cas9'); % Assume stable proteins
+parameters('K_A') = 10;         % Cannot be modulated; determine by fit
+parameters('K_R') = 1;          % Cannot be modulated; determine by fit
+parameters('n') = 2;            % Cannot be modulated; determine by fit
+
+parameters('alpha_p_Cre') = 0.01; % Can be modulated - explore values
+parameters('delta_Cre') = parameters('alpha_p_Cas9'); % Assume stable proteins
+parameters('k_cre') = 0.001;    % Cannot be modulated; determine by fit
 
 
 initial = containers.Map();
@@ -35,7 +39,9 @@ y = cell(3,1);
 [~, y_out(4,:), y{4}] = Joint_delayed_kill_switch(time,parameters,initial,10);
 [time_interval, y_out(5,:), y{5}] = Chain_delayed_kill_switch(time,parameters,initial,10);
 
-figure; 
+h = figure('PaperPosition',[1 1 6 4]); 
 plot(time_interval, y_out);
-legend('Base','TF','Cre','Joint','Chain');
-xlabel('time'); ylabel('[AAV]');
+legend('Base','Activator','Cre-on','Joint Cre-on/Activator','Chain Repressor Cre-on');
+xlabel('Hours'); ylabel('[AAV]');
+title('Sampler of models (non-fit parameters)');
+outputfig(h,'sampler','generated_models/plots');
