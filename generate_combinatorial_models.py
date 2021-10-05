@@ -65,12 +65,11 @@ for tf, cre, order in combinations:
     else:
         constitutive(sgRNA1_dna)
 
-    # TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-    # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
+    # TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
     if cre:
-        system.interfaces = sbol3.Interface(input=[aav, genome, cre_region], output=[aav])
+        system.interface = sbol3.Interface(inputs=[aav, genome, cre_region], outputs=[aav])
     else:
-        system.interfaces = sbol3.Interface(input=[aav, genome], output=[aav])
+        system.interface = sbol3.Interface(inputs=[aav, genome], outputs=[aav])
 
     print('.', end='')
 

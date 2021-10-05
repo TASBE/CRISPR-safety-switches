@@ -1,5 +1,7 @@
 import itertools
 
+from sbol_utilities.helper_functions import id_sort
+
 import workarounds
 
 def transitive_closure(d: dict) -> dict:
@@ -19,7 +21,7 @@ def transitive_closure(d: dict) -> dict:
             raise ValueError(f'Cannot compute closure on cycle graph {d}')
         # union all the targets one step away
         for r in resolvable:
-            closure[r] = sorted(set(closure[r]) | set(itertools.chain(*(closure[x] for x in closure[r]))))
+            closure[r] = id_sort(set(closure[r]) | set(itertools.chain(*(closure[x] for x in closure[r]))))
         # remove everything that's been resolved
         pending = {k: [x for x in v if x not in resolvable] for k, v in pending.items() if k not in resolvable }
     return closure
