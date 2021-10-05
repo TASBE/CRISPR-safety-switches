@@ -28,9 +28,8 @@ class TestSimulation(unittest.TestCase):
         aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
         sgRNA1_dna, genome = builders.make_crispr_module(aav)
         builders.constitutive(sgRNA1_dna)
-        # TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-        # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
-        system.interfaces = sbol3.Interface(input=[aav, genome], output=[aav])
+        # TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
+        system.interface = sbol3.Interface(inputs=[aav, genome], outputs=[aav])
 
         # generate the matlab and write it to a temp file
         tmp_dir = tempfile.mkdtemp()
@@ -81,9 +80,8 @@ class TestSimulation(unittest.TestCase):
         tf_cds, tf_promoter = builders.make_tf_module(aav, True)
         regulate(tf_promoter, cas9_cds)
         constitutive(tf_cds)
-        # TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-        # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
-        system.interfaces = sbol3.Interface(input=[aav], output=[cas9])
+        # TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
+        system.interface = sbol3.Interface(inputs=[aav], outputs=[cas9])
 
         # generate the matlab and write it to a temp file
         tmp_dir = tempfile.mkdtemp()
@@ -119,9 +117,8 @@ class TestSimulation(unittest.TestCase):
         cre_cds, cre_region = builders.make_recombinase_module(aav, True)
         regulate(cre_region, cas9_cds)
         constitutive(cre_cds)
-        # TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-        # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
-        system.interfaces = sbol3.Interface(input=[aav, cre_region], output=[cas9])
+        # TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
+        system.interface = sbol3.Interface(inputs=[aav, cre_region], outputs=[cas9])
 
         # generate the matlab and write it to a temp file
         tmp_dir = tempfile.mkdtemp()

@@ -5,8 +5,7 @@ from typing import Dict, List, Optional, Union, Tuple
 
 import sbol3
 import tyto
-from sbol_utilities.helper_functions import string_to_display_id
-from sbol_utilities.workarounds import id_sort
+from sbol_utilities.helper_functions import id_sort
 from sbol_utilities.component import in_role, all_in_role
 
 from shared_global_names import RECOMBINATION
@@ -27,7 +26,7 @@ class ParameterDictionary(UserDict):
     def __getitem__(self, key):
         if key not in self.data:
             if isinstance(key, str):
-                self.data[key] = string_to_display_id(key)
+                self.data[key] = sbol3.string_to_display_id(key)
             else:
                 self.data[key] = matlab_name(key)  # TODO: in matlab_name, Interactions are not Features; fix here or there
         return self.data[key]
@@ -39,7 +38,7 @@ def matlab_name(feature: sbol3.Feature) -> str:
     :param feature: feature to get a Matlab variable name
     :return: Matlab string
     """
-    return string_to_display_id(feature.name)
+    return sbol3.string_to_display_id(feature.name)
 
 
 def differential(variable: Union[sbol3.Feature, str]) -> str:
@@ -323,8 +322,8 @@ def make_matlab_model(system: sbol3.Component) -> Tuple[str, List[str]]:
     # TODO: input/ouput will change to plural after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
     parameter_names = sorted(set(parameters.values()))
     variable_names = sorted(variables.values())
-    inputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.input)])
-    outputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interfaces.output)])
+    inputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interface.inputs)])
+    outputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interface.outputs)])
     model = format_model(system.display_id, parameter_names, variable_names, inputs, outputs, derivatives)
 
     return model, parameter_names

@@ -22,10 +22,8 @@ class TestCircuitBuilding(unittest.TestCase):
         aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
         sgRNA1_dna, genome = builders.make_crispr_module(aav)
         constitutive(sgRNA1_dna)
-        # TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-        interface = sbol3.Interface(input=[aav, genome], output=[aav])
-        # TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
-        system.interfaces = interface
+        # TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
+        system.interface = sbol3.Interface(inputs=[aav, genome], outputs=[aav])
 
         generated = latex_generation.make_latex_model(system)
         expected = '''\\subsection{Basic Kill Switch}

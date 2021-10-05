@@ -4,8 +4,7 @@ from typing import Dict, List, Optional
 
 import sbol3
 import tyto
-from sbol_utilities.workarounds import id_sort
-
+from sbol_utilities.helper_functions import id_sort
 from sbol_utilities.component import all_in_role, in_role
 
 from helpers import transitive_closure

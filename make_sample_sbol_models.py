@@ -22,9 +22,8 @@ aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
 sgRNA1_dna, genome = builders.make_crispr_module(aav)
 # run it constitutively
 builders.constitutive(sgRNA1_dna)
-# TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-# TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
-system.interfaces = sbol3.Interface(input=[aav, genome], output=[aav])
+# TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
+system.interface = sbol3.Interface(inputs=[aav, genome], outputs=[aav])
 
 # Try the TF
 system = sbol3.Component('TF_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Activator on Kill Switch")
@@ -36,9 +35,8 @@ sgRNA1_dna, genome = builders.make_crispr_module(aav)
 tf_cds, tf_promoter = builders.make_tf_module(aav, repressor=False)
 regulate(tf_promoter, sgRNA1_dna)
 builders.constitutive(tf_cds)
-# TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-# TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
-system.interfaces = sbol3.Interface(input=[aav, genome], output=[aav])
+# TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
+system.interface = sbol3.Interface(inputs=[aav, genome], outputs=[aav])
 
 
 # Try the Cre
@@ -51,9 +49,8 @@ sgRNA1_dna, genome = builders.make_crispr_module(aav)
 cre_cds, cre_region = builders.make_recombinase_module(aav, cre_on=True)
 regulate(cre_region, sgRNA1_dna)
 builders.constitutive(cre_cds)
-# TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-# TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
-system.interfaces = sbol3.Interface(input=[aav, genome, cre_region], output=[aav])
+# TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
+system.interface = sbol3.Interface(inputs=[aav, genome, cre_region], outputs=[aav])
 
 # Try chained regulation and dual regulation
 system = sbol3.Component('Joint_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Dual-activated Kill Switch")
@@ -69,9 +66,8 @@ builders.constitutive(tf_cds)
 cre_cds, cre_region = builders.make_recombinase_module(aav, cre_on=True)
 regulate(cre_region, sgRNA1_dna)
 builders.constitutive(cre_cds)
-# TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-# TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
-system.interfaces = sbol3.Interface(input=[aav, genome, cre_region], output=[aav])
+# TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
+system.interface = sbol3.Interface(inputs=[aav, genome, cre_region], outputs=[aav])
 
 system = sbol3.Component('Chain_delayed_kill_switch', sbol3.SBO_FUNCTIONAL_ENTITY, name="Repression of Cre-activated Kill Switch")
 doc.add(system)
@@ -85,9 +81,8 @@ regulate(cre_region, sgRNA1_dna)
 tf_cds, tf_promoter = builders.make_tf_module(aav, repressor=True)
 regulate(tf_promoter, cre_cds)
 builders.constitutive(tf_cds)
-# TODO: Warning will go away after resolution of https://github.com/SynBioDex/pySBOL3/issues/315
-# TODO: interfaces will change to interface after resolution of https://github.com/SynBioDex/pySBOL3/issues/316
-system.interfaces = sbol3.Interface(input=[aav, genome, cre_region], output=[aav])
+# TODO: Warning will go away after resolution of hhttps://github.com/SynBioDex/pySBOL3/issues/324
+system.interface = sbol3.Interface(inputs=[aav, genome, cre_region], outputs=[aav])
 
 # Eventual full generation should have 17 combinations:
 # - 1 unregulated kill switch
