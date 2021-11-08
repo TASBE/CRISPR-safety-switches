@@ -37,21 +37,21 @@ function yResults = fit_Cre_on_Kill_Switch(parameters, t)
     % ODE differential function
     function dx=diff_eq(t, x)
         % lsqcurve fit won't let me pass x0 as a map, only as a double
-    	alpha_p_Cre = parameters(1);
-        alpha_p_Cas9 = parameters(1);
-        alpha_p_GFP = parameters(1);
+    	alpha_p_Cre = 10^parameters(1);
+        alpha_p_Cas9 = 10^parameters(1);
+        alpha_p_GFP = 10^parameters(1);
         
-    	delta_Cre = parameters(2);
-        delta_Cas9 = parameters(2);
-        delta_GFP = parameters(2);
-        Cas_degradation = parameters(2);
+    	delta_Cre = 10^parameters(2);
+        delta_Cas9 = 10^parameters(2);
+        delta_GFP = 10^parameters(2);
+        Cas_degradation = 10^parameters(2);
         
-        alpha_r_sgRNA1 = parameters(3);
-        delta_g = parameters(4);
+        alpha_r_sgRNA1 = 10^parameters(3);
+        delta_g = 10^parameters(4);
         
-    	k_cre = parameters(5);
-        Cas_gRNA_binding = parameters(6);
-        k_cat = parameters(7);       
+    	k_cre = 10^parameters(5);
+        Cas_gRNA_binding = 10^parameters(6);
+        k_cat = 10^parameters(7);       
         
         % Unpack individual species from x
         AAV = x(1);
