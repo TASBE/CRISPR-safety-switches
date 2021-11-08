@@ -18,10 +18,15 @@ plot(hours, yMeansFig1, 'p')
 % parameters0 = ones(1, 7);
 % Fitting was not changing the starting values
 % Try initial values on different scales to see if that helps
-parameters0 = [1 0 1 0 1 1 1];
+parameters0 = [4 0 4 0 -6 -4 -4];
+
+% Set biologically releveant upper and lower bounds % TODO
+lb = [2 -2 2 -2 -8 -6 -6];
+ub = [6 2 6 2 -4 -2 -2];
 
 % Fit
-x = lsqcurvefit(@fit_Cre_on_Kill_Switch, parameters0, hours, yMeansFig1);
+x = lsqcurvefit(@fit_Cre_on_Kill_Switch, parameters0, hours, yMeansFig1, ...
+    lb, ub);
 
 % Run the model with the fit parameters
 % res = fit_Cre_on_Kill_Switch(x, [0 312]);
@@ -31,6 +36,8 @@ x = lsqcurvefit(@fit_Cre_on_Kill_Switch, parameters0, hours, yMeansFig1);
 
 %% Model Function
 function yResults = fit_Cre_on_Kill_Switch(parameters, t)
+    
+    t = [0 t];
 
     % Intial values (Same number of elements as x in the DiffEq function)
     % Postitions 1, 5, & 9 (all the genes) start at 1, everything else is 0
@@ -39,8 +46,11 @@ function yResults = fit_Cre_on_Kill_Switch(parameters, t)
     y0(5) = 1; % Cre_regulated_region
     y0(9) = 1; % GFP gene
     
+    % Prints
+    parameters
+    
     % Run ODE
-    [T, Cv] = ode45(@diff_eq, t, y0); % Cv is a name I got from a function on stack exchange, change it?
+    [T, Cv] = ode15s(@diff_eq, t, y0); % Cv is a name I got from a function on stack exchange, change it?
     
     % ODE differential function
     function dx=diff_eq(t, x)
@@ -105,13 +115,13 @@ function yResults = fit_Cre_on_Kill_Switch(parameters, t)
             d_edited_Cre_regulated_region, d_postedit_Cas9_sgRNA1, d_sgRNA1, d_gfpGene, d_gfp]';
     end
     
-    
+%     parameters
     % Calculate max GFP: Solve for GFP when gfp_gene is equal to 1 and
     % d_gfp is equal to 0
     % GFP = alpha_p_GFP / delta_GFP
-    max_GFP = parameters(1) / parameters(2);
+    max_GFP = 10^parameters(1) / 10^parameters(2)
     % Calculate percent negative GFP at each time point
-    yResults = (1 - (Cv(:, 10) / max_GFP))'; % TODO: Check this
+    yResults = (1 - (Cv(2:end, 10) / max_GFP))' * 100 % TODO: Check this
 end
 
 
