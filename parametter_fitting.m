@@ -14,8 +14,13 @@ plot(hours, yMeansFig1, 'p')
 
 % Create the model, see the end of the file
 
-% Fit the model using a starting point
-parameters0 = [1 1 1 1 1 1 1];
+% Use a starting point of everything equal to 1
+% parameters0 = ones(1, 7);
+% Fitting was not changing the starting values
+% Try initial values on different scales to see if that helps
+parameters0 = [1 0 1 0 1 1 1];
+
+% Fit
 x = lsqcurvefit(@fit_Cre_on_Kill_Switch, parameters0, hours, yMeansFig1);
 
 % Run the model with the fit parameters
@@ -54,7 +59,7 @@ function yResults = fit_Cre_on_Kill_Switch(parameters, t)
         
     	k_cre = 10^parameters(5);
         Cas_gRNA_binding = 10^parameters(6);
-        k_cat = 10^parameters(7);       
+        k_cat = 10^parameters(7);
         
         % Unpack individual species from x
         LV = x(1);

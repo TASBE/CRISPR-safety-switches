@@ -14,12 +14,13 @@ plot(hours, yMeansFig1, 'p')
 
 % Create the model, see the end of the file
 
-% Fit the model using a starting point
-parameters0 = [1 1 1 1 1 1 1];
+% Fit the model using a starting point (set all to 1)
+parameters0 = ones(1, 7);
+% Fitting was not changing the starting val
 x = lsqcurvefit(@fit_Cre_on_Kill_Switch, parameters0, hours, yMeansFig1);
 
 % Run the model with the fit parameters
-res = fit_Cre_on_Kill_Switch(x, [0 312]);
+% res = fit_Cre_on_Kill_Switch(x, [0 312]);
 
 % Plot the model results
 % plot(xFig1.*24, yFig1, '--')
@@ -54,7 +55,7 @@ function yResults = fit_Cre_on_Kill_Switch(parameters, t)
         
     	k_cre = 10^parameters(5);
         Cas_gRNA_binding = 10^parameters(6);
-        k_cat = 10^parameters(7);       
+        k_cat = 10^parameters(7);
         
         % Unpack individual species from x
         LV = x(1);
@@ -101,13 +102,12 @@ function yResults = fit_Cre_on_Kill_Switch(parameters, t)
     end
     
     
-    % Solve for just the percent of GFP (what the paper is reporting)
     % Calculate max GFP: Solve for GFP when gfp_gene is equal to 1 and
     % d_gfp is equal to 0
-    % GFP = alpha_p_GFP 
-    max_GFP = 
+    % GFP = alpha_p_GFP / delta_GFP
+    max_GFP = parameters(1) / parameters(2);
     % Calculate percent negative GFP at each time point
-    yResults = (Cv(:, 10) / maxGFP)';
+    yResults = (1 - (Cv(:, 10) / max_GFP))'; % TODO: Check this
 end
 
 
