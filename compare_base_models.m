@@ -2,11 +2,11 @@ addpath('generated_models')
 
 parameters = containers.Map();
 % Therapy parameters - cannot be modified
-parameters('Cas_degradation') = 0.01;
-parameters('Cas_gRNA_binding') = 1;
+parameters('Cas_degradation') = 0.01;  % (assuming bound, unbound, and post-edit are equal)
+parameters('Cas_gRNA_binding') = 1; % assuming identical for all gRNAs
 parameters('alpha_r_sgRNA2') = 0.1;
 parameters('alpha_p_Cas9') = 0.1;
-parameters('delta_Cas9') = 0.1;
+parameters('delta_Cas9') = parameters('Cas_degradation');
 parameters('delta_g') = 0.2;
 parameters('k_cat') = 0.1;
 
