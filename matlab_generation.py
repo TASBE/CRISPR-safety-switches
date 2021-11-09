@@ -222,7 +222,7 @@ ode_template = '''function [time_interval, y_out, y] = {}(time_span, parameters,
     {}
     
     % Run ODE
-    solution = ode45(@(t,x) diff_eq(t, x, parameters), time_span, y0);
+    solution = {}(@(t,x) diff_eq(t, x, parameters), time_span, y0);
     
     % Evaluate species levels at given times
     time_interval = time_span(1):step:time_span(end);
@@ -252,16 +252,17 @@ Format parameters are:
  2 Input/output variable names: VARIABLE = i
  3 Number of variables (integer)
  4 Initial value assignments for input variables: y0(VARIABLE) = initial(i)
- 5 Output indices: VARIABLE, VARIABLE, ...
- 6 Parameter names: PARAMETER = i
- 7 Unpacking of variables from x value: VARIABLE = x(i)
- 8 Derivative equations for each species: dVARIABLE = EXPRESSION
- 9 Packing of derivatives for return value: dVARIABLE, dVARIABLE, ...
+ 5 ODE function (ode45 or ode15s)
+ 6 Output indices: VARIABLE, VARIABLE, ...
+ 7 Parameter names: PARAMETER = i
+ 8 Unpacking of variables from x value: VARIABLE = x(i)
+ 9 Derivative equations for each species: dVARIABLE = EXPRESSION
+ 10 Packing of derivatives for return value: dVARIABLE, dVARIABLE, ...
 """
 
 
 def format_model(name: str, parameters: List[str], variables: List[str], inputs: List[str], outputs: List[str],
-                 derivatives: List[str]) -> str:
+                 derivatives: List[str], ode: str='ode45') -> str:
     """Generate a Matlab ODE simulation from the provided inputs
 
     :param name: protocol name
@@ -270,6 +271,7 @@ def format_model(name: str, parameters: List[str], variables: List[str], inputs:
     :param inputs: list of names of input variables
     :param outputs: list of names of output variables
     :param derivatives: list of Matlab equations expressing the derivative for each variable
+    :param ode: Matlab ODE function to use, defaults to ode45
     :return: string containing contents for Matlab simulation file
     """
     # Make the substructures
@@ -279,14 +281,15 @@ def format_model(name: str, parameters: List[str], variables: List[str], inputs:
     initializations = "\n\t".join(f'y0({v}) = initial(\'{v}\');' for v in inputs)
     unpack_variables = "\n\t".join(f'{v} = x({i});' for v, i in zip(variables, range(1, len(variables) + 1)))
     pack_derivatives = ", ".join(f'{differential(v)}' for v in variables)
-    return ode_template.format(name, io_variable_names, len(variables), initializations, ", ".join(outputs),
+    return ode_template.format(name, io_variable_names, len(variables), initializations, ode, ", ".join(outputs),
                                parameter_names, unpack_variables, "\n\t".join(derivatives), pack_derivatives)
 
 
-def make_matlab_model(system: sbol3.Component) -> Tuple[str, List[str]]:
+def make_matlab_model(system: sbol3.Component, ode: str='ode45') -> Tuple[str, List[str]]:
     """Generate a set of LaTeX equations for the identified system:
 
     :param system: system for which a model is to be generated
+    :param ode: Matlab ODE function to use, defaults to ode45
     :return: string serialization of LaTeX equation collection
     """
     # for each feature, collect all of the interactions and constraints that it participates in
@@ -324,6 +327,6 @@ def make_matlab_model(system: sbol3.Component) -> Tuple[str, List[str]]:
     variable_names = sorted(variables.values())
     inputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interface.inputs)])
     outputs = sorted([v for k, v in variables.items() if k.identity in (str(x) for x in system.interface.outputs)])
-    model = format_model(system.display_id, parameter_names, variable_names, inputs, outputs, derivatives)
+    model = format_model(system.display_id, parameter_names, variable_names, inputs, outputs, derivatives, ode)
 
     return model, parameter_names

@@ -18,7 +18,7 @@ function [time_interval, y_out, y] = Joint_Repressor_Cre_on_Kill_Switch(time_spa
 	y0(genome) = initial('genome');
     
     % Run ODE
-    solution = ode45(@(t,x) diff_eq(t, x, parameters), time_span, y0);
+    solution = ode15s(@(t,x) diff_eq(t, x, parameters), time_span, y0);
     
     % Evaluate species levels at given times
     time_interval = time_span(1):step:time_span(end);
@@ -74,7 +74,7 @@ function dx=diff_eq(t, x, parameters)
 	d_Cre_regulated_region = - k_cre*Cre_regulated_region*Cre^4 + (Cre_regulated_region/AAV)*d_AAV;
 	d_edited_Cre_regulated_region =  k_cre*Cre_regulated_region*Cre^4 + (edited_Cre_regulated_region/AAV)*d_AAV;
 	d_Cas9 =  alpha_p_Cas9*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - Cas_gRNA_binding*Cas9*sgRNA2 - delta_Cas9*Cas9;
-	d_sgRNA1 =  alpha_r_sgRNA1*(edited_Cre_regulated_region/AAV)*(K_R^n)/(K_R^n + TF^n)*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - delta_g*sgRNA1;
+	d_sgRNA1 =  alpha_r_sgRNA1*(K_R^n)/(K_R^n + TF^n)*(edited_Cre_regulated_region/AAV)*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - delta_g*sgRNA1;
 	d_sgRNA2 =  alpha_r_sgRNA2*AAV - Cas_gRNA_binding*Cas9*sgRNA2 - delta_g*sgRNA2;
     
     % Pack derivatives for return

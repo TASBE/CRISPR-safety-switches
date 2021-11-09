@@ -18,7 +18,7 @@ function [time_interval, y_out, y] = Chain_TF_Cre_Repressor_Cre_off_Kill_Switch(
 	y0(genome) = initial('genome');
     
     % Run ODE
-    solution = ode45(@(t,x) diff_eq(t, x, parameters), time_span, y0);
+    solution = ode15s(@(t,x) diff_eq(t, x, parameters), time_span, y0);
     
     % Evaluate species levels at given times
     time_interval = time_span(1):step:time_span(end);

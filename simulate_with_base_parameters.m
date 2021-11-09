@@ -12,8 +12,12 @@ time = [0 720];
 y_out = zeros(3,73);
 fprintf('Simulating with base parameters');
 for i=1:n_models,
-    [~, y_out(i,:), ~] = models{i,MODEL_FUN}(time,parameters,initial,10);
-    fprintf('.');
+    try
+        [time_interval, y_out(i,:), ~] = models{i,MODEL_FUN}(time,parameters,initial,10);
+        fprintf('.');
+    catch
+        fprintf('!');
+    end
 end
 fprintf('\n');
 
