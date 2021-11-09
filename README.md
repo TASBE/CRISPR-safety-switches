@@ -12,6 +12,9 @@ Import the module and run via a script like `sbol_to_latex.py`
 
 ## Generating MATLAB Code
 
+The routines for generating LaTeX from SBOL circuits are in `matlab_generation.py`
+Import the module and run via a script like `sbol_to_matlab.py`
+
 
 # Curve fitting
 

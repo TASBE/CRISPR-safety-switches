@@ -1,4 +1,4 @@
-%% Model Function
+% Model Function for circuit from Chylinski et al Figure 2
 function yResults = fit_Cre_on_Kill_Switch(parameters, t)
     
     t = [0 t];
