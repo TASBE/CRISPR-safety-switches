@@ -5,7 +5,7 @@ parameters = containers.Map();
 % This should be the starting point for any simulation run
 
 % Therapy parameters - cannot be modified
-parameters('Cas_degradation') = 10^(-1.6977);   % fraction/hour, fit; (assuming bound, unbound, and post-edit are equal)
+parameters('Cas_degradation') = 10^(-2.0);      % fraction/hour, fit, but lowered for stable cells (vs. fast-dividing mES in Chylinski); (assuming bound, unbound, and post-edit are equal)
 parameters('Cas_gRNA_binding') = 10^(-4.2577);  % fit; assuming identical for all gRNAs
 parameters('alpha_r_sgRNA2') = 10^(3.3090);     % molecules/hour, fit
 parameters('alpha_p_Cas9') = 10^(3.0415);       % molecules/hour, fit

@@ -52,3 +52,9 @@ ylabel('% negative GFP');
 legend('Location','SouthEast','Data','Mean','Fit');
 outputfig(h,'parameter_fit','plots');
 
+% Note that in Chylinski, the cells are fast-divising mES cells
+% Accordingly anything with a half-life of longer than ~24 hours will get
+% the mES time instead of its actual half-life
+% This applies to delta_P, but not to delta_g
+% We will compensate for the fact that simulations are of stable cells by
+% lowering base delta_P slightly order of magnitude to -2, approximately corresponding to a 3-day halflife
