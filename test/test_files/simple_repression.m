@@ -34,6 +34,7 @@ function dx=diff_eq(t, x, parameters)
 	n = parameters('n');
     
     % Unpack individual species from x
+    x = max(0,real(x)); % Truncate values at zero
     AAV = x(1);
 	Cas9 = x(2);
 	TF = x(3);
@@ -43,6 +44,6 @@ function dx=diff_eq(t, x, parameters)
 	d_Cas9 =  alpha_p_Cas9*(K_R^n)/(K_R^n + TF^n)*AAV - delta_Cas9*Cas9;
 	d_TF =  alpha_p_TF*AAV - delta_TF*TF;
     
-    % Pack derivatives for return
-    dx = [d_AAV, d_Cas9, d_TF]';
+    % Pack derivatives for return, ensuring none are complex
+    dx = real([d_AAV, d_Cas9, d_TF])';
 end
