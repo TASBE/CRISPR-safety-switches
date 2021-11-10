@@ -15,5 +15,5 @@ doc.read(MODEL_FILE)
 for c in (o for o in doc.objects if isinstance(o, sbol3.Component)):
     with open(os.path.join('generated_models', f'{c.display_id}.m'), 'w') as out:
         print(f'Writing model for {c.identity}')
-        model, parameters = matlab_generation.make_matlab_model(c)
+        model, parameters = matlab_generation.make_matlab_model(c,'ode15s')
         out.write(model)

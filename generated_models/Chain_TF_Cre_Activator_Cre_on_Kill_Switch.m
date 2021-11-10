@@ -18,7 +18,7 @@ function [time_interval, y_out, y] = Chain_TF_Cre_Activator_Cre_on_Kill_Switch(t
 	y0(genome) = initial('genome');
     
     % Run ODE
-    solution = ode45(@(t,x) diff_eq(t, x, parameters), time_span, y0);
+    solution = ode15s(@(t,x) diff_eq(t, x, parameters), time_span, y0);
     
     % Evaluate species levels at given times
     time_interval = time_span(1):step:time_span(end);
@@ -46,6 +46,7 @@ function dx=diff_eq(t, x, parameters)
 	n = parameters('n');
     
     % Unpack individual species from x
+    x = max(0,real(x)); % Truncate values at zero
     AAV = x(1);
 	Cas9 = x(2);
 	Cas9_sgRNA1 = x(3);
@@ -77,6 +78,6 @@ function dx=diff_eq(t, x, parameters)
 	d_sgRNA1 =  alpha_r_sgRNA1*(edited_Cre_regulated_region/AAV)*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - delta_g*sgRNA1;
 	d_sgRNA2 =  alpha_r_sgRNA2*AAV - Cas_gRNA_binding*Cas9*sgRNA2 - delta_g*sgRNA2;
     
-    % Pack derivatives for return
-    dx = [d_AAV, d_Cas9, d_Cas9_sgRNA1, d_Cas9_sgRNA2, d_Cre, d_Cre_regulated_region, d_TF, d_edited_Cre_regulated_region, d_edited_genome, d_genome, d_postedit_Cas9_sgRNA1, d_postedit_Cas9_sgRNA2, d_sgRNA1, d_sgRNA2]';
+    % Pack derivatives for return, ensuring none are complex
+    dx = real([d_AAV, d_Cas9, d_Cas9_sgRNA1, d_Cas9_sgRNA2, d_Cre, d_Cre_regulated_region, d_TF, d_edited_Cre_regulated_region, d_edited_genome, d_genome, d_postedit_Cas9_sgRNA1, d_postedit_Cas9_sgRNA2, d_sgRNA1, d_sgRNA2])';
 end
