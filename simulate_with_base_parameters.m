@@ -38,7 +38,7 @@ for i=1:numel(clusters)
     end    
 end
 % No Delay, Repressor, Cre-ON, Chain Cre-ON \rightarrow Repressor, Chain Cre-OFF \rightarrow Repressor, Chain Activator \rightarrow Cre-ON, Chain Repressor \rightarrow Cre-ON, Joint Repressor/Cre-ON
-legend_names{1} = 'No Delay, (Chain \rightarrow) Repressor, (Chain \rightarrow) Cre-ON, Joint Repressor/Cre-ON';
+legend_names{1} = 'No Delay, (Chain \rightarrow) Repressor, (Chain \rightarrow) Cre-ON, Parallel Repressor/Cre-ON';
 
 h = figure('PaperPosition',[1 1 6 6]); 
 for i=1:numel(representative)
