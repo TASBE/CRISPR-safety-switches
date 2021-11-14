@@ -56,8 +56,8 @@ for i=1:numel(clusters)
         legend_names{i} = sprintf('%s, %s',legend_names{i},models{cluster(j),MODEL_NAME});
     end    
 end
-legend_names{1} = 'No Delay, (Any) Cre-ON, (Any ->/Parallel) Repressor, Sequential Activator \rightarrow Cre-OFF';
-legend_names{2} = '(Cre-OFF/Cre-ON/Repressor ->) Cre-OFF, Parallel Cre-OFF/Repressor';
+legend_names{1} = 'No Delay, (Any) Cre-ON, (Any \rightarrow/Parallel) Repressor, Sequential Activator \rightarrow Cre-OFF';
+legend_names{2} = '(Cre-OFF/Cre-ON/Repressor \rightarrow) Cre-OFF, Parallel Cre-OFF/Repressor';
 legend_names{3} = '(Cre-ON/Repressor \rightarrow/Parallel) Activator';
 legend_names{7} = '(Cre-Off/Repressor \rightarrow/Parallel) Cre-OFF';
 
