@@ -28,7 +28,12 @@ name_to_symbol = {
     'Cre': '\\proSp{\\cre{}}',
     'Cre regulated region': '\\vectorGen{}_C',
     'edited Cre regulated region': '\\edited{\\vectorGen{}_C}',
-    'Cre recombination': '\\creCutRate{}'
+    'Cre recombination': '\\creCutRate{}',
+    # section TF2/Cre Homolog
+    'TF2': '\\proSp{TF2}',
+    'CreH': '\\proSp{CreH}',
+    'CreH regulated region': '\\vectorGen{}_{CH}',
+    'edited CreH regulated region': '\\edited{\\vectorGen{}_{CH}}',
 }
 """Dictionary mapping from SBOL names to LaTeX symbols in our convention"""
 
