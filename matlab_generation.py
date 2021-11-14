@@ -242,8 +242,8 @@ function dx=diff_eq(t, x, parameters)
     % Compute derivative for each species
     {}
     
-    % Pack derivatives for return, ensuring none are complex
-    dx = real([{}])';
+    % Pack derivatives for return, ensuring none are complex or go below zero
+    dx = max(-x,real([{}])');
 end
 '''
 """Template for the Matlab simulation, including both the runner and the step function.

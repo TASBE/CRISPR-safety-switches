@@ -75,9 +75,9 @@ function dx=diff_eq(t, x, parameters)
 	d_Cre_regulated_region = - k_cre*Cre_regulated_region*Cre^4 + (Cre_regulated_region/AAV)*d_AAV;
 	d_edited_Cre_regulated_region =  k_cre*Cre_regulated_region*Cre^4 + (edited_Cre_regulated_region/AAV)*d_AAV;
 	d_Cas9 =  alpha_p_Cas9*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - Cas_gRNA_binding*Cas9*sgRNA2 - delta_Cas9*Cas9;
-	d_sgRNA1 =  alpha_r_sgRNA1*(Cre_regulated_region/AAV)*(TF^n)/(K_A^n + TF^n)*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - delta_g*sgRNA1;
+	d_sgRNA1 =  alpha_r_sgRNA1*(TF^n)/(K_A^n + TF^n)*(Cre_regulated_region/AAV)*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - delta_g*sgRNA1;
 	d_sgRNA2 =  alpha_r_sgRNA2*AAV - Cas_gRNA_binding*Cas9*sgRNA2 - delta_g*sgRNA2;
     
-    % Pack derivatives for return, ensuring none are complex
-    dx = real([d_AAV, d_Cas9, d_Cas9_sgRNA1, d_Cas9_sgRNA2, d_Cre, d_Cre_regulated_region, d_TF, d_edited_Cre_regulated_region, d_edited_genome, d_genome, d_postedit_Cas9_sgRNA1, d_postedit_Cas9_sgRNA2, d_sgRNA1, d_sgRNA2])';
+    % Pack derivatives for return, ensuring none are complex or go below zero
+    dx = max(-x,real([d_AAV, d_Cas9, d_Cas9_sgRNA1, d_Cas9_sgRNA2, d_Cre, d_Cre_regulated_region, d_TF, d_edited_Cre_regulated_region, d_edited_genome, d_genome, d_postedit_Cas9_sgRNA1, d_postedit_Cas9_sgRNA2, d_sgRNA1, d_sgRNA2])');
 end

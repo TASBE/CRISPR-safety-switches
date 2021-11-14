@@ -75,7 +75,7 @@ for i=2:n_models,
     for t1=1:n_tunings
         for t2=1:n_tunings
             %color = [1-(t1/n_tunings), 0, t2/n_tunings];
-            % Red = low alpha_p_TF; Blue = high alpha_p_TF; Green = low alpha_p_Cre
+            % Red = low Param 1; Blue = high Param 1; Green = low Param 2
             color = [max(0,-tuning(t1)/2), 1-t2/n_tunings, max(0,tuning(t1)/2)];
             plot(time_interval/24, squeeze(y_out(i,t1,t2,:)), 'Color', color); hold on;
         end
