@@ -37,7 +37,7 @@ function dx=diff_eq(t, x, parameters)
 	k_cat = parameters('k_cat');
     
     % Unpack individual species from x
-    x = max(0,real(x)); % Truncate values at zero
+    x = max(1e-12,real(x)); % Truncate values just above zero
     AAV = x(1);
 	Cas9 = x(2);
 	Cas9_sgRNA1 = x(3);

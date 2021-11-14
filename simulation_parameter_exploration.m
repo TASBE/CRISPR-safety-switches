@@ -6,6 +6,7 @@ model_catalog;
 initial = containers.Map();
 initial('AAV') = 10;
 initial('Cre_regulated_region') = initial('AAV'); % if present, starts unmodified
+initial('CreH_regulated_region') = initial('AAV'); % if present, starts unmodified
 initial('genome') = 1;
 
 % Base parameters code for ~10^5 proteins max
@@ -22,12 +23,12 @@ for i=2:n_models,
     for t1=1:n_tunings
         for t2=1:n_tunings
             tuned_param = containers.Map(parameters.keys, parameters.values);
-            tuned_param('alpha_p_TF') = tuned_param('alpha_p_TF')*10^tuning(t1);
-            tuned_param('alpha_p_Cre') = tuned_param('alpha_p_Cre')*10^tuning(t2);
+            if models{i,MODEL_PARAM1}, tuned_param(models{i,MODEL_PARAM1}) = tuned_param(models{i,MODEL_PARAM1})*10^tuning(t1); end;
+            if models{i,MODEL_PARAM2}, tuned_param(models{i,MODEL_PARAM2}) = tuned_param(models{i,MODEL_PARAM2})*10^tuning(t2); end;
             try
                 [time_interval, y_out(i,t1,t2,:), y_complete{i,t1,t2}] = models{i,MODEL_FUN}(time,tuned_param,initial,1);
                 count = count+1;
-                if mod(count,50)==0, fprintf('.'); end;
+                if mod(count,10)==0, fprintf('.'); end;
             catch
                 fprintf('!');
             end
@@ -38,6 +39,12 @@ end
 
 % Not saving this because it ends up being too big, at 68 MB
 %save('parameter_exploration.mat','tuning','time_interval','y_out','y_complete');
+
+latex_labels = containers.Map();
+latex_labels('alpha_p_TF') = 'alpha_{p,TF}';
+latex_labels('alpha_p_TF2') = 'alpha_{p,TF2}';
+latex_labels('alpha_p_Cre') = 'alpha_{p,Cre}';
+latex_labels('alpha_p_CreH') = 'alpha_{p,CreH}';
 
 greymap = colormap;
 greymap(end,:) = [0.5 0.5 0.5];
@@ -52,7 +59,9 @@ for i=2:n_models,
     
     h = figure('PaperPosition',[1 1 6 4]); 
     imagesc(tuning,tuning,halfway_time/24);
-    ylabel('alpha_{p,TF}'); xlabel('alpha_{p,Cre}');
+    xl = models{i,MODEL_PARAM2};
+    if xl, xl = latex_labels(xl); else xl = 'None'; end
+    ylabel(latex_labels(models{i,MODEL_PARAM1})); xlabel(xl);
     c = colorbar;
     c.Label.String = 'Days to 50% elimination';
     colormap(greymap);

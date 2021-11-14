@@ -46,7 +46,7 @@ function dx=diff_eq(t, x, parameters)
 	k_cre = parameters('k_cre');
     
     % Unpack individual species from x
-    x = max(0,real(x)); % Truncate values at zero
+    x = max(1e-12,real(x)); % Truncate values just above zero
     AAV = x(1);
 	Cas9 = x(2);
 	Cas9_sgRNA1 = x(3);
@@ -79,7 +79,7 @@ function dx=diff_eq(t, x, parameters)
 	d_CreH_regulated_region = - k_cre*CreH_regulated_region*CreH^4 + (CreH_regulated_region/AAV)*d_AAV;
 	d_edited_CreH_regulated_region =  k_cre*CreH_regulated_region*CreH^4 + (edited_CreH_regulated_region/AAV)*d_AAV;
 	d_Cas9 =  alpha_p_Cas9*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - Cas_gRNA_binding*Cas9*sgRNA2 - delta_Cas9*Cas9;
-	d_sgRNA1 =  alpha_r_sgRNA1*(edited_CreH_regulated_region/AAV)*(edited_Cre_regulated_region/AAV)*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - delta_g*sgRNA1;
+	d_sgRNA1 =  alpha_r_sgRNA1*(edited_Cre_regulated_region/AAV)*(edited_CreH_regulated_region/AAV)*AAV - Cas_gRNA_binding*Cas9*sgRNA1 - delta_g*sgRNA1;
 	d_sgRNA2 =  alpha_r_sgRNA2*AAV - Cas_gRNA_binding*Cas9*sgRNA2 - delta_g*sgRNA2;
     
     % Pack derivatives for return, ensuring none are complex
