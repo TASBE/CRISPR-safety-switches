@@ -26,3 +26,9 @@ parameters('n') = 0.92;                         % from Calin Belta paper; Cannot
 parameters('alpha_p_Cre') = parameters('alpha_p_Cas9'); % Can be modulated - explore values
 parameters('delta_Cre') = parameters('Cas_degradation'); % Assume reasonably similar and stable proteins
 parameters('k_cre') = 10^(-7.1535);             % fit; Cannot be readily modulated
+
+% Second copies of delay mechanisms
+parameters('alpha_p_TF2') = parameters('alpha_p_TF'); % Can be modulated - explore values
+parameters('delta_TF2') = parameters('delta_TF'); % Assume reasonably similar and stable proteins
+parameters('alpha_p_CreH') = parameters('alpha_p_Cre'); % Can be modulated - explore values
+parameters('delta_CreH') = parameters('delta_Cre'); % Assume reasonably similar and stable proteins

@@ -151,6 +151,77 @@ class TestCircuitBuilding(unittest.TestCase):
                                             fromfile='Generated', tofile='Expected'))
         assert not diff, f'Generated value does not match expectation: {diff}'
 
+    def test_two_tf_module(self):
+        """Make sure that the basic TF module generates the right structure and from it the right LaTeX"""
+        doc = sbol3.Document()
+        sbol3.set_namespace('http://bbn.com/crispr-kill-switch/')
+        system = sbol3.Component('TFTF', sbol3.SBO_FUNCTIONAL_ENTITY, name="Dual TF")
+        doc.add(system)
+        aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
+        cas9_cds = contains(aav, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[sbol3.SO_CDS], name="Cas9-coding"))
+        cas9 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_PROTEIN], name="Cas9"))
+        add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {cas9_cds: sbol3.SBO_TEMPLATE, cas9: sbol3.SBO_PRODUCT})
+        add_interaction(sbol3.SBO_DEGRADATION, name='Cas degradation', participants={cas9: sbol3.SBO_REACTANT})
+        tf_cds, tf_target = builders.make_tf_module(aav, True)
+        tf2_cds, tf2_target = builders.make_tf_module(aav, False, True)
+        regulate(tf_target, cas9_cds)
+        regulate(tf2_target, tf_cds)
+        constitutive(tf2_cds)
+
+        generated = latex_generation.make_latex_model(system)
+        expected = '''\\subsection{Dual TF}
+\\label{s:TFTF}
+% Equations generated from http://bbn.com/crispr-kill-switch/TFTF
+
+\\begin{align}
+\\diff{\\conc{\\proSp{\\cas{}}}}{t} & =  \\txtlRate{\\proSp{\\cas{}}}\\frac{(K_R)^n}{(K_R)^n + \\conc{\\proSp{TF}}^n}\\vectorGen{} - \\proDegradeRate{\\proSp{\\cas{}}}\\conc{\\proSp{\\cas{}}}\\\\
+\\diff{\\conc{\\proSp{TF}}}{t} & =  \\txtlRate{\\proSp{TF}}\\frac{\\conc{\\proSp{TF2}}^n}{(K_A)^n + \\conc{\\proSp{TF2}}^n}\\vectorGen{} - \\proDegradeRate{\\proSp{TF}}\\conc{\\proSp{TF}}\\\\
+\\diff{\\conc{\\proSp{TF2}}}{t} & =  \\txtlRate{\\proSp{TF2}}\\vectorGen{} - \\proDegradeRate{\\proSp{TF2}}\\conc{\\proSp{TF2}}
+\\end{align}
+
+'''
+
+        diff = ''.join(difflib.unified_diff(io.StringIO(generated).readlines(), io.StringIO(expected).readlines(),
+                                            fromfile='Generated', tofile='Expected'))
+        assert not diff, f'Generated value does not match expectation: {diff}'
+
+    def test_two_recombinase_module(self):
+        """Make sure that the basic TF module generates the right structure and from it the right LaTeX"""
+        doc = sbol3.Document()
+        sbol3.set_namespace('http://bbn.com/crispr-kill-switch/')
+        system = sbol3.Component('Recombinase', sbol3.SBO_FUNCTIONAL_ENTITY, name="Dual Recombinase")
+        doc.add(system)
+        aav = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_DNA], name='AAV'))
+        cas9_cds = contains(aav, sbol3.LocalSubComponent([sbol3.SBO_DNA], roles=[sbol3.SO_CDS], name="Cas9-coding"))
+        cas9 = add_feature(system, sbol3.LocalSubComponent([sbol3.SBO_PROTEIN], name="Cas9"))
+        add_interaction(sbol3.SBO_GENETIC_PRODUCTION, {cas9_cds: sbol3.SBO_TEMPLATE, cas9: sbol3.SBO_PRODUCT})
+        add_interaction(sbol3.SBO_DEGRADATION, name='Cas degradation', participants={cas9: sbol3.SBO_REACTANT})
+        cre_cds, cre_region = builders.make_recombinase_module(aav, True)
+        creH_cds, creH_region = builders.make_recombinase_module(aav, False, True)
+        regulate(cre_region, cas9_cds)
+        regulate(creH_region, cre_cds)
+        constitutive(creH_cds)
+
+        generated = latex_generation.make_latex_model(system)
+        expected = '''\\subsection{Dual Recombinase}
+\\label{s:Recombinase}
+% Equations generated from http://bbn.com/crispr-kill-switch/Recombinase
+
+\\begin{align}
+\\diff{\\conc{\\proSp{CreH}}}{t} & =  \\txtlRate{\\proSp{CreH}}\\vectorGen{} - \\proDegradeRate{\\proSp{CreH}}\\conc{\\proSp{CreH}}\\\\
+\\diff{\\vectorGen{}_{CH}}{t} & = - \\creCutRate{} \\vectorGen{}_{CH} \\conc{\\proSp{CreH}}^4 + \\frac{\\vectorGen{}_{CH}}{\\vectorGen{}} \\diff{\\vectorGen{}}{t}\\\\
+\\diff{\\edited{\\vectorGen{}_{CH}}}{t} & =  \\creCutRate{} \\vectorGen{}_{CH} \\conc{\\proSp{CreH}}^4 + \\frac{\\edited{\\vectorGen{}_{CH}}}{\\vectorGen{}} \\diff{\\vectorGen{}}{t}\\\\
+\\diff{\\conc{\\proSp{\\cas{}}}}{t} & =  \\txtlRate{\\proSp{\\cas{}}}\\frac{\\edited{\\vectorGen{}_C}}{\\vectorGen{}}\\vectorGen{} - \\proDegradeRate{\\proSp{\\cas{}}}\\conc{\\proSp{\\cas{}}}\\\\
+\\diff{\\conc{\\proSp{\\cre{}}}}{t} & =  \\txtlRate{\\proSp{\\cre{}}}\\frac{\\vectorGen{}_{CH}}{\\vectorGen{}}\\vectorGen{} - \\proDegradeRate{\\proSp{\\cre{}}}\\conc{\\proSp{\\cre{}}}\\\\
+\\diff{\\vectorGen{}_C}{t} & = - \\creCutRate{} \\vectorGen{}_C \\conc{\\proSp{\\cre{}}}^4 + \\frac{\\vectorGen{}_C}{\\vectorGen{}} \diff{\\vectorGen{}}{t}\\\\
+\\diff{\\edited{\\vectorGen{}_C}}{t} & =  \\creCutRate{} \\vectorGen{}_C \\conc{\\proSp{\\cre{}}}^4 + \\frac{\\edited{\\vectorGen{}_C}}{\\vectorGen{}} \\diff{\\vectorGen{}}{t}
+\\end{align}
+
+'''
+
+        diff = ''.join(difflib.unified_diff(io.StringIO(generated).readlines(), io.StringIO(expected).readlines(),
+                                            fromfile='Generated', tofile='Expected'))
+        assert not diff, f'Generated value does not match expectation: {diff}'
 
 if __name__ == '__main__':
     unittest.main()
