@@ -35,7 +35,7 @@ function dx=diff_eq(t, x, parameters)
 	k_cre = parameters('k_cre');
     
     % Unpack individual species from x
-    x = max(0,real(x)); % Truncate values at zero
+    x = max(1e-12,real(x)); % Truncate values just above zero
     AAV = x(1);
 	Cas9 = x(2);
 	Cre = x(3);
@@ -49,6 +49,6 @@ function dx=diff_eq(t, x, parameters)
 	d_Cre_regulated_region = - k_cre*Cre_regulated_region*Cre^4 + (Cre_regulated_region/AAV)*d_AAV;
 	d_edited_Cre_regulated_region =  k_cre*Cre_regulated_region*Cre^4 + (edited_Cre_regulated_region/AAV)*d_AAV;
     
-    % Pack derivatives for return, ensuring none are complex
-    dx = real([d_AAV, d_Cas9, d_Cre, d_Cre_regulated_region, d_edited_Cre_regulated_region])';
+    % Pack derivatives for return, ensuring none are complex or go below zero
+    dx = max(-x,real([d_AAV, d_Cas9, d_Cre, d_Cre_regulated_region, d_edited_Cre_regulated_region])');
 end

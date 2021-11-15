@@ -32,4 +32,4 @@ end
 % xlabel('\alpha_{p,TF}'); ylabel('Final [Cas9]');
 
 test_end_points = y_out([1 3 5 7 9 11],end)'
-expected = [0.2472    1.3687    4.3352    5.0004    5.0006    5.0000]
+expected = [0.2471    1.3687    4.3349    5.0009    5.0008    5.2009]

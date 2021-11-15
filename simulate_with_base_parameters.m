@@ -29,24 +29,24 @@ for i=1:n_models
     plot(time_interval, y_out(i,:)); hold on;
 end
 % 8 clusters
+% clusters based on: 
+% y_out(:,[20 50 100 end])
 
 clusters = {
-    [1 3 4 8 9 12 13 16 17 20 21 29 30 31] % no significant delay
-    [7]             % 0.5<X<3 at 20: Activator->Cre-OFF
-    [2 14 18 24 25] % 3<X<8 at 20: (Cre-ON/Repressor)->Activator
-    [6 22]          % 1<X<8 at 50: Dual Activator
-    [15]            % 6<X<8 at end, <8.5 at 100 - 'Sequential Cre-OFF \rightarrow Activator'
-    [10]            % 6<X<8 at end, >8.5 at 100 - 'Sequential Cre-OFF \rightarrow Activator'
-    [5 11 19 26 28] % 8<X<9.5 at end: (Repressor)->Cre-OFF
-    [23, 27]        % >9.5 at end - Parallel Activator/Cre-OFF
+    [1 3 4 7 8 9 12 13 14 16 20 21 24 27 29 30 31] % no significant delay
+    [5 11 15 19 28] % 1<X<3 at 20: (Repressor)->Cre-OFF
+    [2 18 25]       % 4<X<6 at 20: (Repressor ->/Parallel) Activator
+    [6 22]          % 1<X<8 at 50, X<1 at 100: Dual Activator
+    [26]            % 0.5<2<2 at 50
+    [10]            % 1<X<2 at 100 - 'Sequential Cre-OFF \rightarrow Activator'
+    [17]            % 1<X<8 at end
+    [23]            % 8<x at end - Parallel Activator/Cre-OFF
     };
 n_clusters = numel(clusters);
 representative = zeros(n_clusters,1);
 for i=1:n_clusters, representative(i) = clusters{i}(1); end;
 colors = {'k-', 'r-', 'g-', 'b-', 'c-', 'm-','k--','b--'};
 
-% clusters based on: 
-% y_out(:,[50 200 end])
 
 legend_names = cell(numel(clusters),1);
 for i=1:numel(clusters)
@@ -56,9 +56,8 @@ for i=1:numel(clusters)
         legend_names{i} = sprintf('%s, %s',legend_names{i},models{cluster(j),MODEL_NAME});
     end    
 end
-% No Delay, Repressor, Cre-ON, Chain Cre-ON \rightarrow Repressor, Chain Cre-OFF \rightarrow Repressor, Chain Activator \rightarrow Cre-ON, Chain Repressor \rightarrow Cre-ON, Joint Repressor/Cre-ON
-%legend_names{1} = 'No Delay, (Chain \rightarrow) Repressor, (Chain \rightarrow) Cre-ON, Parallel Repressor/Cre-ON';
-legend_names{1} = 'No Delay, (Chain Any \rightarrow) Repressor/Cre-ON, Parallel Repressor/Cre-ON';
+legend_names{1} = 'No Delay, (Any) Cre-ON, (Any \rightarrow/Parallel) Repressor, Sequential Activator \rightarrow Cre-OFF';
+legend_names{2} = '(Cre-OFF/Cre-ON/Repressor \rightarrow) Cre-OFF, Parallel Cre-OFF/Repressor';
 legend_names{3} = '(Cre-ON/Repressor \rightarrow/Parallel) Activator';
 legend_names{7} = '(Cre-Off/Repressor \rightarrow/Parallel) Cre-OFF';
 
