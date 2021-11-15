@@ -8,8 +8,8 @@ initial('AAV') = 10;
 initial('Cre_regulated_region') = initial('AAV'); % if present, starts unmodified
 initial('genome') = 1;
 
-FOCUS = 10; 
-%models{FOCUS,MODEL_NAME} % confirm we've got 'Chain Activator \rightarrow Cre-ON'
+FOCUS = find(cellfun(@(x)(strcmp(x,'Sequential Activator \rightarrow Cre-ON')),models(:,MODEL_NAME)));
+%models{FOCUS,MODEL_NAME} % confirm we've got right model
 
 % Base parameters code for ~10^5 proteins max
 % Therefore, it's quite reasonable to adjust the alpha values up and down by 100x
