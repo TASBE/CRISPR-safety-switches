@@ -43,3 +43,6 @@ n_models = size(models,1);
 
 MODEL_NAME = 1;
 MODEL_FUN = 2;
+
+% Save as workspace variables as a .mat file
+save('model-catalog.mat')

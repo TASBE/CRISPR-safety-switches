@@ -32,3 +32,6 @@ parameters('alpha_p_TF2') = parameters('alpha_p_TF'); % Can be modulated - explo
 parameters('delta_TF2') = parameters('delta_TF'); % Assume reasonably similar and stable proteins
 parameters('alpha_p_CreH') = parameters('alpha_p_Cre'); % Can be modulated - explore values
 parameters('delta_CreH') = parameters('delta_Cre'); % Assume reasonably similar and stable proteins
+
+% Save as a .mat file
+save('base-parameters.mat')

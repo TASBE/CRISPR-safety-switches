@@ -1,0 +1,38 @@
+% Load in the model catalog
+load('model-catalog.mat')
+
+% Load in the paramters % Do I need this for the plotting?
+load('base-parameters.mat')
+    
+% Collect model info
+modelName = models{1, MODEL_NAME};
+modelFun = models{1, MODEL_FUN};
+
+% Do the perturbation
+% [whichVars, results] = logNormalPerturbation(...
+%      modelFun, parameters, parameters('Cas_degradation'), 100, [0 312], 'False');
+ 
+% Testing for logNormalPerturbation
+vars = parameters;
+perturbedVars = 'Cas_degradation';
+nRuns = 51; % Odd number gives you a 50% percentile
+
+% Same as in function
+percentiles = linspace(0.023, 0.977, nRuns);
+% Normal distribution values at percentiles
+pd = makedist('Normal');
+normalDist = zeros(size(percentiles));
+for j = 1:length(percentiles)
+    normalDist(j) = icdf(pd, percentiles(j));
+end
+
+% For each run
+l = 26; % Test with the 50th percentile
+% Copy the parameter map
+varsToUse = vars;
+% For each perturbed var
+% Does this need to change now that the variables are already on the log
+% scale? % TODO: ASK JAKE
+stddev = 2; % TODO: ASK JAKE IF ANY OF THESE NEED TO BE VARIABLE
+varsToUse(perturbedVars) = 10^(normalDist(l)*log10(stddev)+log10(vars(perturbedVars)));
+% Pass varsToUse to the DE

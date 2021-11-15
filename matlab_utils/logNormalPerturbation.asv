@@ -11,13 +11,15 @@ function results = logNormalPerturbation(...
     % INPUT:
     %   fcnHandle - (function handle) Function handle for differential 
     %       equation function to be used
-    %   vars - (map) Map object listing the parameter names and values as 
-    %       determined from parameter fitting and literature
-    %   perturbedVars - (cell array) Name(s) of variables to be perturbed
+    %   vars - (cell array) Cell array holding all variables needed for
+    %       differential equation, column 1 = variable 1, column 2 = 
+    %       fit value (used as mean of the log normal distribution), 
+    %       column 3 = standard deviation of fit value
+    %   perturbedVars - (string array) Name(s) of variables to be perturbed
     %   nRuns - (double) Number of perturbations to run
     %   tspan - (double) Time span to model ([start, end])
-    %   initial - (map) Map object listing initial value names and values
-    %   random - (logical) Is the perturbation to be random on the log 
+    %   initial - (double) TODO
+    %   random - (logical) Is the pertuebation to be random on the log 
     %       normal scale?
     %
     % OUTPUT:
@@ -62,7 +64,6 @@ function results = logNormalPerturbation(...
         for j = 1:length(percentiles)
             normalDist(j) = icdf(pd, percentiles(j));
         end
-        
     end
     
     % For every percentile
@@ -86,7 +87,6 @@ function results = logNormalPerturbation(...
             results{l, 1} = percentiles(l);
         end
         results{l, 2} = varsToUse;
-        
     end
     
     %% Run the DE model
@@ -105,6 +105,5 @@ function results = logNormalPerturbation(...
         if i == nRuns
             fprintf('\n');
         end
-        
     end
     toc
