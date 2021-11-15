@@ -2,16 +2,13 @@
 % Last updated: 2021-11-14, by Helen Scott
 %
 % REVISION HISTORY:
-%   11/14/2021 - Helen Scott
+%   11/15/2021 - Helen Scott
 %       * Initial implementation
-%       * Goal: Have a one-click method to (re)generate info for all plots
+%       * Goal: Have a one-click method to (re)generate all plots
 %       * Want the plotting to be separrate from the actual perturbation
+%       * 
 
-% Load in the model catalog
-load('model-catalog.mat')
-
-% Load in the paramters % Do I need this for the plotting?
-load('base-parameters.mat')
+% Set parent directory of all the results you want to plot
 
 % For all models
 for i = 1:n_models

@@ -16,8 +16,13 @@
 % Load in the model catalog
 load('model-catalog.mat')
 
+% Select a subset of models
+% Have to overwrite n_models and models
+
 % Load in the paramters
 load('base-parameters.mat')
+% We want to perturb every parameter individually
+parameterNames = keys(parameters);
 
 % Set the initial
 initial = containers.Map();
@@ -33,45 +38,52 @@ tspan = [0 312];
 % Note: An odd number gives you a 50% percentile
 nRuns = 51; 
 
-% List all of the perturbation sets
-perturbationCombinations = {...
-    {'alpha_p_Cas9', 'alpha_p_TF', 'alpha_p_Cre', 'alpha_p_TF2'},
-    {'delta_Cas9', 'delta_TF', 'delta_TF2', 'delta_Cre', 'delta_CreH'},
-    {'alpha_r_sgRNA2', 'alpha_r_sgRNA1'},
-    {'delta_g'},
-    {'Cas_degradation'},
-    {'Cas_gRNA_binding'},
-    {'k_cat'},
-    {'K_A'},
-    {'K_R'},
-    {'k_cre'}
-    };
+% Set the output path
+resultsPath = './results/';
 
 %% Loop
 % For all models
-for i = 31:n_models % CHANGE BACK TO 1!
+for i = 1:n_models
     
     % Collect model info
     modelName = models{i, MODEL_NAME};
     modelFun = models{i, MODEL_FUN};
     
+    % Clean up name (for making directory/files)
+    cleanModelName = strrep(strrep(strrep(modelName, '\rightarrow ', ''),...
+        ' ', '_'), '/', '-');
+    
+    % Make an output folder for this circuit model
+    outpath = [resultsPath, cleanModelName, '/'];
+    
+    % If directory doesn't exist, try to create it
+    if ~isfolder(outpath)
+        fprintf('Directory does not exist, attempting to make it: %s', ...
+            outpath);
+        mkdir(outpath);
+    end
+    
     % Print to screen
     disp(['Currently on: ', modelName]);
     
     % For every perturbation combination listed
-    for j = 1:length(perturbationCombinations)
+    for j = 1:length(parameterNames)
+        
+        % TODO: Skip the irrelevant variables
         
         % Print to screen
-        disp(['Perturbed Parameter(s): ', perturbationCombinations{j}]);
+        disp(['Perturbed Parameter(s): ', parameterNames{j}]);
         
         % Do the perturbation
         results = logNormalPerturbation(modelFun, parameters, ...
             perturbationCombinations{j}, nRuns, tspan, initial, false);
-
+        
+        % Extract just what is needed for plotting
+        plotData = {};
+        
         % Save results as a .mat file
-        save([strrep(strrep(strrep(modelName, '\rightarrow ', ''), ' ', '_'), '/', '-'), ...
-            '-perturb-', strjoin(perturbationCombinations{j}, '-'), ...
-            '.mat'], 'results')
+        save([outpath, cleanModelName, '-perturb-', parameterNames{j}, ...
+            '.mat'], 'plotData')
     end
     
 end

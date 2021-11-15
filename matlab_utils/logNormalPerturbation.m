@@ -46,7 +46,7 @@ function results = logNormalPerturbation(...
     end
 
     % Create cell array to hold results
-    results = cell(nRuns, 3);
+    results = cell(nRuns, 4);
     
     %% Generate Variables to Use in the DE
     % If making a regularly spaced log normal distribution, find
@@ -68,15 +68,17 @@ function results = logNormalPerturbation(...
     % For every percentile
     for l = 1:length(normalDist)
         % Copy the parameter map
-        varsToUse = vars;
+        varsToUse = containers.Map(vars.keys, vars.values);
         % Assume that all parameters have a standard deviation of 2
-        stddev = 2; % TODO: Make this variable?
+        stddev = 2;
         
         % For each perturbed var
         for k = 1:length(perturbedVars)
             % Generate value to use
-            varsToUse(perturbedVars{k}) = 10^(normalDist(l) * ...
+            perturbedValue = 10^(normalDist(l) * ...
                 log10(stddev) + log10(vars(perturbedVars{k})));
+            varsToUse(perturbedVars{k}) = perturbedValue;
+            results{l, 2} = perturbedValue; % Probelematic if we have more than 1 perturbed variable...
         end
         
         % Save the percentile and the perturbed vars to the results array
@@ -85,7 +87,7 @@ function results = logNormalPerturbation(...
         else
             results{l, 1} = percentiles(l);
         end
-        results{l, 2} = varsToUse;
+        results{l, 3} = varsToUse;
         
     end
     
@@ -99,7 +101,7 @@ function results = logNormalPerturbation(...
         
         % Run the model, save to results array
         [x, y_out, y] = fcnHandle(tspan, results{i, 2}, initial);
-        results{i, 3} = {x, y_out, y};
+        results{i, 4} = {x, y_out, y};
 
         % Carriage return at the end
         if i == nRuns
