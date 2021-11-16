@@ -100,7 +100,7 @@ function results = logNormalPerturbation(...
         end
         
         % Run the model, save to results array
-        [x, y_out, y] = fcnHandle(tspan, results{i, 2}, initial);
+        [x, y_out, y] = fcnHandle(tspan, results{i, 3}, initial);
         results{i, 4} = {x, y_out, y};
 
         % Carriage return at the end

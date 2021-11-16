@@ -3,7 +3,7 @@
 %
 % REVISION HISTORY:
 %   11/15/2021
-%       * 
+%       * Set-up so that we perturb all of the parameters alone
 %   11/14/2021 - Helen Scott
 %       * Initial implementation
 %       * Goal: Have a one-click method to (re)generate info for all plots
@@ -14,13 +14,13 @@
 
 %% Set-Up
 % Load in the model catalog
-load('model-catalog.mat')
+model_catalog
 
 % Select a subset of models
 % Have to overwrite n_models and models
 
 % Load in the paramters
-load('base-parameters.mat')
+base_parameters
 % We want to perturb every parameter individually
 parameterNames = keys(parameters);
 
@@ -39,7 +39,10 @@ tspan = [0 312];
 nRuns = 51; 
 
 % Set the output path
-resultsPath = './results/';
+resultsPath = './single-parameter-perturbation-results/';
+
+% Postion of the results we care about
+resPos = [1, 2];
 
 %% Loop
 % For all models
@@ -76,14 +79,20 @@ for i = 1:n_models
         
         % Do the perturbation
         results = logNormalPerturbation(modelFun, parameters, ...
-            perturbationCombinations{j}, nRuns, tspan, initial, false);
+            string(parameterNames{j}), nRuns, tspan, initial, false);
         
         % Extract just what is needed for plotting
-        plotData = {};
+        percentiles = results{:, 1};
+        perturbedValues = results{:, 2};
+        x = results{1, 4}{1};
+        ys = cell(length(results), 1);
+        for k = 1:length(results)
+            ys{k} = results{k, 4}{2};
+        end
         
         % Save results as a .mat file
         save([outpath, cleanModelName, '-perturb-', parameterNames{j}, ...
-            '.mat'], 'plotData')
+            '.mat'], 'percentiles', 'perturbedValues', 'x', 'ys')
     end
     
 end
