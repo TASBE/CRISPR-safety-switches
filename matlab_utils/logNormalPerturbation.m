@@ -66,17 +66,27 @@ function results = logNormalPerturbation(...
     end
     
     % For every percentile
-    for l = 1:length(normalDist)
+    for l = 1:nRuns
         % Copy the parameter map
         varsToUse = containers.Map(vars.keys, vars.values);
-        % Assume that all parameters have a standard deviation of 2
-        stddev = 2;
+        
+        % Set the standard deviation
+        if random
+            stddev = 1.1;
+        else
+            stddev = 1.5;
+        end
         
         % For each perturbed var
         for k = 1:length(perturbedVars)
             % Generate value to use
-            perturbedValue = 10^(normalDist(l) * ...
-                log10(stddev) + log10(vars(perturbedVars{k})));
+            if random
+                perturbedValue = 10^(randn() * log10(stddev) + ...
+                    log10(vars(perturbedVars{k})));
+            else
+                perturbedValue = 10^(normalDist(l) * ...
+                    log10(stddev) + log10(vars(perturbedVars{k})));
+            end
             varsToUse(perturbedVars{k}) = perturbedValue;
             results{l, 2} = perturbedValue; % Probelematic if we have more than 1 perturbed variable...
         end
@@ -94,8 +104,8 @@ function results = logNormalPerturbation(...
     %% Run the DE model
     % Pass to the single perturbation that many times
     for i = 1:nRuns
-        % Ticker for progress, every 10 loops
-        if mod(i, 10) == 0
+        % Ticker for progress, every 100 loops
+        if mod(i, 100) == 0
             fprintf('%d ', i); 
         end
         
