@@ -1,4 +1,4 @@
-function densityheatmap(results, nBins, cLimits, name, path)
+function densityheatmap(x, ys, nBins, cLimits, name, path)
     % FUNCTION NAME:
     %   densityheatmap
     %
@@ -26,57 +26,30 @@ function densityheatmap(results, nBins, cLimits, name, path)
     %   Path is assumed to end in '/' if supplied
     %
     % REVISION HISTORY:
+    %   12/06/2021 - Helen Scott
+    %       * Changes to work with new results structure
     %   04/08/2021 - hscott
     %       * Initial implement
     %
-    
-    %% Make outout path path
-    % Default path is current path
-    if nargin < 5
-        path = './plots/';  % Note: frontslash works for both Windows and Mac/Unix
-    else
-        path = [path, 'plots/'];
-    end 
-    
-    % If directory doesn't exist, try to create it
-    if ~isfolder(path)
-        sanitized_path = strrep(path, '/', '&#47;');
-        sanitized_path = strrep(sanitized_path, '\', '&#92;');
-        sanitized_path = strrep(sanitized_path, ':', '&#58;');
-        disp('Directory does not exist, attempting to create it: %s',sanitized_path);
-        mkdir(path);
-    end
 
     %% Add points to arrays
-    x = [];
-    y = [];
-    for i = 1:length(results)
-        sol = results{i, end};
-        tint = 1:336;
-        yint = zeros(size(tint));
-        for j = tint
-            ddeRes = deval(sol, j);
-            yint(j) = 100* ddeRes(5) / (ddeRes(4) + ddeRes(5));
-        end
-        x = [x, tint];
-        y = [y, yint];
+    xPoints = [];
+    yPoints = [];
+    for i = 1:length(ys)
+        xPoints = [xPoints, x/24];
+        yPoints = [yPoints, ys{i}];
     end
 
     %% Plot
-    figure;
-    hist3([x', y'], nBins, 'CdataMode','auto', 'EdgeColor', 'none');
-    xlabel('Time (hours)');
-    ylabel('% EGFP neg');
+    figure('visible', 'off'); % Make but don't show the figure
+    hist3([xPoints', yPoints'], nBins, 'CdataMode','auto', 'EdgeColor', 'none');
+    xlabel('Time (Days)');
+    ylabel('AAV');
     cb = colorbar;
     caxis(cLimits);
     ylabel(cb,'Number of Trajectories Per Cell');
     view(2);
-    title(['Trajectory Density of ', name, ' perturbation']);
+    title(sprintf('Trajectory Density of Random Perturbation (50%% off at %d days)', name));
     
     %%  Save figure
-    % Make a clean name
-    cleanName = sanitize_filename(name);
-    % Output
-    saveas(gcf, [path cleanName '.eps'], 'epsc');
-    saveas(gcf, [path cleanName '.png'], 'png');
-    saveas(gcf, [path cleanName '.fig']);
+    saveas(gcf, [path, 'random-perturb-all-tweaked-parameters-', int2str(name), '.png'], 'png');

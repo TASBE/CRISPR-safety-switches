@@ -1,6 +1,5 @@
-function [whichVars, results] = logNormalPerturbation(...
-        fcnHandle, vars, perturbedVars, nRuns, tspan, random)
-    
+function results = logNormalPerturbation(...
+        fcnHandle, vars, perturbedVars, nRuns, tspan, initial, random)
     % FUNCTION NAME:
     %   logNormalPerturbation
     %
@@ -12,31 +11,30 @@ function [whichVars, results] = logNormalPerturbation(...
     % INPUT:
     %   fcnHandle - (function handle) Function handle for differential 
     %       equation function to be used
-    %   vars - (cell array) Cell array holding all variables needed for
-    %       differential equation, column 1 = variable 1, column 2 = 
-    %       fit value (used as mean of the log normal distribution), 
-    %       column 3 = standard deviation of fit value
-    %   perturbedVars - (string array) Name(s) of variables to be perturbed
+    %   vars - (map) Map object listing the parameter names and values as 
+    %       determined from parameter fitting and literature
+    %   perturbedVars - (cell array) Name(s) of variables to be perturbed
     %   nRuns - (double) Number of perturbations to run
     %   tspan - (double) Time span to model ([start, end])
-    %   random - (logical) Is the pertuebation to be random on the log 
+    %   initial - (map) Map object listing initial value names and values
+    %   random - (logical) Is the perturbation to be random on the log 
     %       normal scale?
     %
     % OUTPUT:
-    %   whichVars - (logical) Logical if the variable in that row of vars
-    %       is being varied in the perturbation
-    %   Dist - (double) List of perturbed values of variable of interest 
     %   results - (cell) Column 1 = percentile of the perturbed value in
     %       the log normal distribution (NaN for random distributions), 
-    %       column 2 = varaibles used for the differential equation, column
-    %       3 = results from the differential equation (sol)
+    %       column 2 = variables used for the differential equation, column
+    %       3 = results from the model function
     %
     % ASSUMPTIONS AND LIMITATIONS:
-    %   Order of variables in the vars array, must match the order the 
-    %   variables are "unpacked" in the DE function.
+    %   Currently asusming std devs for all parameters are 2
     %
     % REVISION HISTORY:
-    %   04/08/2021 - hscott
+    %   11/14/2021 - Helen Scott
+    %       * Change to use with new models
+    %           * Got rid of boolean vector (whichVars) because it won't 
+    %               work with the parameter map
+    %   04/08/2021 - Helen Scott
     %       * Fix for loop (Was recreating varsToUse every loop)
     %
     
@@ -47,20 +45,10 @@ function [whichVars, results] = logNormalPerturbation(...
         disp('PERTURBATIONS RUN:')
     end
 
-    % Create vector to hold results
-    results = cell(nRuns, 3);
+    % Create cell array to hold results
+    results = cell(nRuns, 4);
     
     %% Generate Variables to Use in the DE
-    % Boolean vector, True if the variable is being varied 
-    whichVars = zeros(1, length(vars));
-    for i = 1:length(perturbedVars)
-        for j = 1:length(vars)
-            if whichVars(j) == 0
-                whichVars(j) = (vars{j,1} == perturbedVars(i));
-            end
-        end
-    end
-    
     % If making a regularly spaced log normal distribution, find
     % percentiles of a normal distribution
     if ~random
@@ -74,55 +62,61 @@ function [whichVars, results] = logNormalPerturbation(...
         for j = 1:length(percentiles)
             normalDist(j) = icdf(pd, percentiles(j));
         end
+        
     end
     
-    % Generate variables to use
-    varsToUse = zeros(nRuns, length(vars));
-    for k = 1:length(whichVars)
-        if whichVars(k)
-            mean = vars{k, 2};
-            stddev = vars{k, 3};
-            Dist = zeros(1, nRuns);
-            for l = 1:nRuns
-                if random
-                    Dist(l) = 10^(randn()*log10(stddev)+log10(mean));
-                else
-                    Dist(l) = 10^(normalDist(l)*log10(stddev)+log10(mean));
-                end
-            end
-            varsToUse(:, k) = Dist;
+    % For every percentile
+    for l = 1:nRuns
+        % Copy the parameter map
+        varsToUse = containers.Map(vars.keys, vars.values);
+        
+        % Set the standard deviation
+        if random
+            stddev = 1.1;
         else
-            varsToUse(:, k) = vars{k, 2};
+            stddev = 1.5;
         end
+        
+        % For each perturbed var
+        for k = 1:length(perturbedVars)
+            % Generate value to use
+            if random
+                perturbedValue = 10^(randn() * log10(stddev) + ...
+                    log10(vars(perturbedVars{k})));
+            else
+                perturbedValue = 10^(normalDist(l) * ...
+                    log10(stddev) + log10(vars(perturbedVars{k})));
+            end
+            varsToUse(perturbedVars{k}) = perturbedValue;
+            results{l, 2} = perturbedValue; % Probelematic if we have more than 1 perturbed variable...
+        end
+        
+        % Save the percentile and the perturbed vars to the results array
+        if random
+            results{l, 1} ='NaN';
+        else
+            results{l, 1} = percentiles(l);
+        end
+        results{l, 3} = varsToUse;
+        
     end
     
     %% Run the DE model
     % Pass to the single perturbation that many times
     for i = 1:nRuns
-        % Ticker for progress, every 10 loops
-        if mod(i, 10) == 0
+        % Ticker for progress, every 100 loops
+        if mod(i, 100) == 0
             fprintf('%d ', i); 
         end
         
-        % Save percentile values
-        if random
-            % Random values don't have percentiles- save as NaN
-            results(i,1) = {NaN};
-        else
-            % Save the percentiles to the results array
-            results(i,1) = {percentiles(i)};
-        end
-        
-        % Save the variables to the results array
-        results(i, 2) = {varsToUse(i, :)};
-        
         % Run the model, save to results array
-        [x, y] = fcnHandle(tspan, varsToUse(i, :));
-        results{i, 3} = {x, y};
+        [x, y_out, y] = fcnHandle(tspan, results{i, 3}, initial);
+        results{i, 4} = {x, y_out, y};
 
         % Carriage return at the end
         if i == nRuns
             fprintf('\n');
         end
+        
     end
     toc

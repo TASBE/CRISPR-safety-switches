@@ -11,7 +11,5 @@
 __pycache__
 .idea
 *.pyc
-<<<<<<< HEAD
-=======
 /venv/
->>>>>>> develop
+./single-parameter-perturbation-results/
