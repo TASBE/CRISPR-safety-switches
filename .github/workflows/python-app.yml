@@ -12,8 +12,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up MATLAB
-      uses: matlab-actions/setup-matlab@v1
+    - name: Set up Octave
+      run: |
+        sudo apt-get -y -qq update
+        sudo apt-get install -y -qq --no-install-recommends octave
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
