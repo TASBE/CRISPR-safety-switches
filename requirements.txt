@@ -1,4 +1,4 @@
 sbol3==1.0rc1
 sbol-utilities==1.0a15
-tyto=1.0
-oct2py=5.4.3
+tyto==1.0
+oct2py==5.4.3
